@@ -15,6 +15,7 @@ import com.shareclarity.textdetectwidget.others.GraphicOverlay;
 import com.shareclarity.textdetectwidget.text_detection.TextRecognitionProcessor;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class CameraActivity extends AppCompatActivity {
 
@@ -25,7 +26,7 @@ public class CameraActivity extends AppCompatActivity {
     private GraphicOverlay graphicOverlay;
 
     private static String TAG = CameraActivity.class.getSimpleName().toString().trim();
-    private String[] companies;
+    private HashMap<String,String> companies;
     //endregion
 
     @Override
@@ -43,7 +44,7 @@ public class CameraActivity extends AppCompatActivity {
             Log.d(TAG, "graphicOverlay is null");
         }
 
-        companies = getIntent().getStringArrayExtra("companies");
+        companies = (HashMap<String, String>)getIntent().getSerializableExtra("companies");
         createCameraSource();
         startCameraSource();
     }
@@ -76,7 +77,7 @@ public class CameraActivity extends AppCompatActivity {
             cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
         }
 
-        cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(companies));
+        cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(companies,this));
     }
 
     private void startCameraSource() {

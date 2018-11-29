@@ -13,9 +13,21 @@
 // limitations under the License.
 package com.shareclarity.textdetectwidget.text_detection;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Camera;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,13 +38,19 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+import com.shareclarity.textdetectwidget.CameraActivity;
+import com.shareclarity.textdetectwidget.R;
 import com.shareclarity.textdetectwidget.others.FrameMetadata;
 import com.shareclarity.textdetectwidget.others.GraphicOverlay;
 
 import java.io.IOException;
+import java.lang.reflect.AccessibleObject;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.shareclarity.textdetectwidget.TextdetectWidgetPlugin.mResult;
 
 //import com.ajeetkumar.textdetectionusingmlkit.others.VisionProcessorBase;
 
@@ -43,20 +61,23 @@ public class TextRecognitionProcessor {
 
 	private static final String TAG = "TextRecProc";
 
-	private String[] companies;
+	private HashMap<String,String> companies;
+
+	private Context context;
 
 	private final FirebaseVisionTextRecognizer detector;
+
+	private boolean tempFlag = false;
 
 	// Whether we should ignore process(). This is usually caused by feeding input data faster than
 	// the model can handle.
 	private final AtomicBoolean shouldThrottle = new AtomicBoolean(false);
 
-	public TextRecognitionProcessor(String[] _companies) {
+	public TextRecognitionProcessor(HashMap<String,String> _companies, Context _context) {
 		detector = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
 		companies = _companies;
+		context = _context;
 	}
-
-
 
 	//region ----- Exposed Methods -----
 
@@ -96,23 +117,54 @@ public class TextRecognitionProcessor {
 
 
 	protected void onSuccess(@NonNull FirebaseVisionText results, @NonNull FrameMetadata frameMetadata, @NonNull GraphicOverlay graphicOverlay) {
-
+		CameraActivity cameraActivity = (CameraActivity)context;
+		cameraActivity.findViewById(R.id.imv_plus).setAlpha(1);
 		graphicOverlay.clear();
+		for (int p = 0; p < companies.keySet().size(); p++) {
+			String company = (String)companies.keySet().toArray()[p];
+			String[] subStrings = company.split(" ");
+			Log.d(TAG,results.getText());
+			List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
+			for (int i = 0; i < blocks.size(); i++) {
+				FirebaseVisionText.TextBlock block = blocks.get(i);
+				Log.d(TAG,block.getText());
 
-		List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
-		for (int i = 0; i < blocks.size(); i++) {
-			List<FirebaseVisionText.Line> lines = blocks.get(i).getLines();
+				List<FirebaseVisionText.Line> lines = block.getLines();
 
-			for (int j = 0; j < lines.size(); j++) {
-				FirebaseVisionText.Line line = lines.get(j);
-				for (int p = 0; p < companies.length; p++) {
-					if (line.getText().contains(companies[p])) {
-						int min = line.getBoundingBox().left; int max = line.getBoundingBox().right;
+				for (int j = 0; j < lines.size(); j++) {
+					FirebaseVisionText.Line line = lines.get(j);
+					Boolean lineFlag = true;
+					Boolean lineBreak = false;
+
+					if (!line.getText().toLowerCase().contains(subStrings[0].toLowerCase())) {//No Containing
+						lineFlag = false;
+					} else if (!line.getText().toLowerCase().contains(company.toLowerCase())) { // In this case line break or No containting
+						lineFlag = false;
+						for (int u =1;u<subStrings.length;u++) {
+							if (!line.getText().toLowerCase().contains(subStrings[u].toLowerCase())) {
+								if (j != lines.size() - 1 ) {
+									String test = lines.get(j+1).getText();
+								}
+								if (j != lines.size() - 1 && lines.get(j+1).getText().toLowerCase().contains(subStrings[u].toLowerCase())) {
+									lineFlag = true;lineBreak = true;
+								} else {
+									lineFlag = false;lineBreak = false;
+								}
+							}
+						}
+					}
+
+					if (lineFlag) {
+						int min = line.getBoundingBox().left;
+						int max = line.getBoundingBox().right;
 						List<FirebaseVisionText.Element> elements = lines.get(j).getElements();
+						boolean elementFlag = false;
+						//Finding location of detected text
 						for (int k = 0; k < elements.size(); k++) {
 							FirebaseVisionText.Element element = elements.get(k);
-							if (companies[p].contains(element.getText())) {
-								if (k == 0) {
+							if (company.toLowerCase().contains(element.getText().toLowerCase())) {
+								if (!elementFlag) {
+									elementFlag = true;
 									min = element.getBoundingBox().left;
 									max = element.getBoundingBox().right;
 								} else {
@@ -125,14 +177,64 @@ public class TextRecognitionProcessor {
 								}
 							}
 						}
-						RectF rectF = new RectF(min,line.getBoundingBox().top,max, line.getBoundingBox().bottom);
-						GraphicOverlay.Graphic textGraphic = new TextGraphic(graphicOverlay, rectF, companies[p]);
+						//Add Rect to overlay
+						RectF rectF = new RectF(min, line.getBoundingBox().top, max, line.getBoundingBox().bottom);
+
+                        final String nickname = (String)companies.values().toArray()[p];
+						GraphicOverlay.Graphic textGraphic = new TextGraphic(context, rectF, nickname, graphicOverlay);
+						textGraphic.setClickable(true);
 						graphicOverlay.add(textGraphic);
+
+                        Display display = cameraActivity.getWindowManager().getDefaultDisplay();
+                        Point size = new Point();
+                        display.getSize(size);
+
+						//Focus
+						RectF focusRect = new RectF();
+						focusRect.left = (pxToDp(size.x) - 300) / 2;
+						focusRect.top = 100;
+						focusRect.right = focusRect.left + 300;
+						focusRect.bottom = 160;
+
+						//Tag rect
+						RectF newRect = new RectF();
+						newRect.left = pxToDp((int)(rectF.width() / 2 + rectF.left - 100));
+						newRect.top = pxToDp((int)rectF.top);
+						newRect.right = pxToDp((int)(rectF.width() / 2 + rectF.left + 100));
+						newRect.bottom = pxToDp((int)(rectF.bottom));
+
+						RectF testRect = newRect;
+
+						if (newRect.left + 80 > focusRect.left && newRect.right + 80 < focusRect.right) {
+							if (newRect.top + 10 > focusRect.top && newRect.bottom + 10 < focusRect.bottom) {
+								//Blink animation
+								if (!tempFlag) {
+									Animation animation = AnimationUtils.loadAnimation(cameraActivity.getApplicationContext(), R.anim.blink);
+									cameraActivity.findViewById(R.id.rl_focus).startAnimation(animation);
+									Animation animation1 = AnimationUtils.loadAnimation(cameraActivity.getApplicationContext(), R.anim.blink_resume);
+									cameraActivity.findViewById(R.id.rl_focus).startAnimation(animation1);
+									tempFlag = true;
+								}
+								cameraActivity.findViewById(R.id.imv_plus).setAlpha(0);
+								return;
+							}
+						}
+						tempFlag = false;
+					}
+
+					if (lineBreak) {
+						//... This code will be used later
 					}
 				}
-
 			}
 		}
+	}
+	public static int pxToDp(int px) {
+		return (int) (px / Resources.getSystem().getDisplayMetrics().density);
+	}
+
+	public static int dpToPx(int dp) {
+		return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
 	}
 
 	protected void onFailure(@NonNull Exception e) {

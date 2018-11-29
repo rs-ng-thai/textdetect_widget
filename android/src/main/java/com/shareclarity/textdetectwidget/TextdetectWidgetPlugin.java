@@ -6,6 +6,8 @@ import android.content.Intent;
 import com.google.firebase.FirebaseApp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -15,6 +17,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** TextdetectWidgetPlugin */
 public class TextdetectWidgetPlugin implements MethodCallHandler {
+    public static Result mResult;
     static Activity mActivity;
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
@@ -27,12 +30,10 @@ public class TextdetectWidgetPlugin implements MethodCallHandler {
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         if (call.method.equals("openCamera")) {
-            ArrayList<String > companyList  = call.argument("companies");
-            String[] companies = new String[companyList.size()];
-            companies = companyList.toArray(companies);
-
+            HashMap<String,String> companyList  = call.argument("companies");
             Intent intent = new Intent(mActivity, CameraActivity.class);
-            intent.putExtra("companies",companies);
+            intent.putExtra("companies",companyList);
+            mResult = result;
             mActivity.startActivity(intent);
         } else {
             result.notImplemented();

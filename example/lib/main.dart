@@ -21,8 +21,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _openCamera() {
-    var companies = ["Tourism Holdings Limited","Port of Tauranga Limited","Metlifecare Limited"];
-    TextdetectWidget.openCamera(companies);
+    var companies = <String, String>{
+      "Tourism Holdings Limited": "THL.NZ",
+      "Port of Tauranga Limited": "POT.NZ",
+      "Metlifecare Limited": "MET.NZ"
+    };
+
+    TextdetectWidget.openCamera(companies).then((String result) {
+      print("result:  $result");
+    });
   }
 
   @override

@@ -140,12 +140,12 @@ static const CGFloat FIRconstantScale = 1.0;
                 // Lines.
                 for (FIRVisionTextLine *line in block.lines) {
                     NSLog(@"%@", line.text);
-                    
                     for (int i=0; i< self.companies.count; i ++) {
-                        if ([line.text containsString:self->_companies[i]]) {
+                        NSString* company = self->_companies[i];
+                        if ([line.text.lowercaseString containsString:company.lowercaseString]) {
                             CGFloat min = 0,max = 0;
                             for (FIRVisionTextElement *element in line.elements) {
-                                if ([self->_companies[i] containsString:element.text]) {
+                                if ([company.lowercaseString containsString:element.text.lowercaseString]) {
                                     if (min == 0) {
                                         min = element.frame.origin.y;
                                         max = element.frame.origin.y + element.frame.size.height;

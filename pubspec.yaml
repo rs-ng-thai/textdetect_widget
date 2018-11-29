@@ -1,8 +1,8 @@
 name: textdetect_widget
 description: A flutter plugin to integrate the Google MLKit for iOS and Android. Live Camera Text Detection is available on current version.
 version: 0.0.1
-author:Thai
-homepage:http://shareclarity.com
+author: Thai <thai.ng@shareclarity.com>
+homepage: https://shareclarity.com
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"

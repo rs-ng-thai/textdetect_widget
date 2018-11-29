@@ -56,12 +56,16 @@ public class GraphicOverlay extends View {
    * this and implement the {@link Graphic#draw(Canvas)} method to define the graphics element. Add
    * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
    */
-  public abstract static class Graphic {
-    private GraphicOverlay overlay;
+  public abstract static class Graphic extends View{
+    public GraphicOverlay overlay;
 
-    public Graphic(GraphicOverlay overlay) {
-      this.overlay = overlay;
+    public Graphic(Context context) {
+      super(context);
     }
+
+//    public Graphic(GraphicOverlay overlay) {
+//      this.overlay = overlay;
+//    }
 
     /**
      * Draw the graphic on the supplied canvas. Drawing should use the following methods to convert
@@ -76,7 +80,7 @@ public class GraphicOverlay extends View {
      *
      * @param canvas drawing canvas
      */
-    public abstract void draw(Canvas canvas);
+//    public abstract void draw(Canvas canvas);
 
     /**
      * Adjusts a horizontal value of the supplied value from the preview scale to the view scale.
