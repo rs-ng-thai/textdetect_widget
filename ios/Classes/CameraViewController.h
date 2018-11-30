@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraViewController : UIViewController
 
-@property (nonatomic, retain) NSArray* companies;
+@property (nonatomic, retain) NSDictionary* companies;
 @end
 
 NS_ASSUME_NONNULL_END

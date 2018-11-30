@@ -3,9 +3,10 @@
 #import <Firebase/Firebase.h>
 @implementation TextdetectWidgetPlugin{
     FlutterResult flutterResult;
+    
 }
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
+  channel = [FlutterMethodChannel
       methodChannelWithName:@"textdetect_widget"
             binaryMessenger:[registrar messenger]];
   TextdetectWidgetPlugin* instance = [[TextdetectWidgetPlugin alloc] init];
@@ -15,7 +16,7 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"openCamera" isEqualToString:call.method]) {
-        NSArray* companies = (NSArray*)call.arguments[@"companies"];
+        NSDictionary* companies = (NSDictionary*)call.arguments[@"companies"];
         [self openCameraResult:result companies:companies];
     }
     else {

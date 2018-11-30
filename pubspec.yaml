@@ -23,6 +23,9 @@ flutter:
   plugin:
     androidPackage: com.shareclarity.textdetectwidget
     pluginClass: TextdetectWidgetPlugin
+  assets:
+    - asset/focus_camera.png
+    - asset/plus_icon.png
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

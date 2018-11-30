@@ -27,9 +27,17 @@ class _MyAppState extends State<MyApp> {
       "Metlifecare Limited": "MET.NZ"
     };
 
-    TextdetectWidget.openCamera(companies).then((String result) {
+    TextdetectWidget(_handelTextDetect).openCamera(companies).then((String result) {
       print("result:  $result");
     });
+  }
+
+  Future<dynamic> _handelTextDetect(MethodCall call) async {
+    switch(call.method) {
+      case "detect":
+        debugPrint(call.arguments);
+        return new Future.value("");
+    }
   }
 
   @override

@@ -50,6 +50,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.flutter.plugin.common.MethodChannel;
+
+import static com.shareclarity.textdetectwidget.TextdetectWidgetPlugin.channel;
 import static com.shareclarity.textdetectwidget.TextdetectWidgetPlugin.mResult;
 
 //import com.ajeetkumar.textdetectionusingmlkit.others.VisionProcessorBase;
@@ -216,6 +219,7 @@ public class TextRecognitionProcessor {
 									tempFlag = true;
 								}
 								cameraActivity.findViewById(R.id.imv_plus).setAlpha(0);
+								channel.invokeMethod("detect",nickname);
 								return;
 							}
 						}

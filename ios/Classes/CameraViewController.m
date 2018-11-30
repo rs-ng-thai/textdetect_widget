@@ -1,6 +1,7 @@
 //
 //
 #import "CameraViewController.h"
+#import "TextdetectWidgetPlugin.h"
 #import "UIUtilities.h"
 @import AVFoundation;
 @import CoreVideo;
@@ -26,6 +27,8 @@ static const CGFloat FIRconstantScale = 1.0;
 @property (nonatomic) UIView *annotationOverlayView;
 @property (nonatomic) UIImageView *previewOverlayView;
 @property (nonatomic) UIView *cameraView;
+@property (nonatomic) UIImageView *plusImageView;
+@property (nonatomic) UIView *focusView;
 @property (nonatomic) CMSampleBufferRef lastFrame;
 @end
 
@@ -33,8 +36,7 @@ static const CGFloat FIRconstantScale = 1.0;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-     [self.view setBackgroundColor:UIColor.blueColor];
-    _cameraView = [[UIView alloc] init];
+     _cameraView = [[UIView alloc] init];
         _cameraView.backgroundColor = UIColor.whiteColor;
         [self.view addSubview:_cameraView];
         [_cameraView setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -76,6 +78,62 @@ static const CGFloat FIRconstantScale = 1.0;
         [self.view addConstraint:topConstraint];
         [self.view addConstraint:heightConstraint];
 
+    _focusView = [[UIView alloc] init];
+    [self.view addSubview:_focusView];
+    [_focusView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    NSLayoutConstraint *_centerConstraint = [NSLayoutConstraint
+                                          constraintWithItem:_focusView
+                                          attribute:NSLayoutAttributeCenterX
+                                          relatedBy:NSLayoutRelationEqual
+                                          toItem:self.view
+                                          attribute:NSLayoutAttributeCenterX
+                                          multiplier:1.0
+                                          constant:0];
+    NSLayoutConstraint *_topConstraint = [NSLayoutConstraint
+                                         constraintWithItem:_focusView
+                                         attribute:NSLayoutAttributeTop
+                                         relatedBy:NSLayoutRelationEqual
+                                         toItem:self.view
+                                         attribute:NSLayoutAttributeTop
+                                         multiplier:1.0
+                                         constant:200];
+    NSLayoutConstraint *_widthConstraint = [NSLayoutConstraint
+                                            constraintWithItem:_focusView
+                                            attribute:NSLayoutAttributeWidth
+                                            relatedBy:NSLayoutRelationEqual
+                                            toItem:nil
+                                            attribute:NSLayoutAttributeNotAnAttribute
+                                            multiplier:1.0
+                                            constant:300];
+    NSLayoutConstraint *_heightConstraint = [NSLayoutConstraint
+                                           constraintWithItem:_focusView
+                                           attribute:NSLayoutAttributeHeight
+                                           relatedBy:NSLayoutRelationEqual
+                                           toItem:nil
+                                           attribute:NSLayoutAttributeNotAnAttribute
+                                           multiplier:1.0
+                                           constant:60];
+    
+    [self.view addConstraint:_topConstraint];
+    [self.view addConstraint:_centerConstraint];
+    [self.view addConstraint:_widthConstraint];
+    [self.view addConstraint:_heightConstraint];
+    [NSLayoutConstraint activateConstraints:@[_topConstraint,_centerConstraint, widthConstraint,heightConstraint]];
+    
+    UIImageView* focusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 300, 60)];
+    NSString* focusPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/focus_camera.png" ofType:nil];
+    NSString* plusPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/plus_icon.png" ofType:nil];
+    NSURL *focus_url = [NSURL fileURLWithPath:focusPath];
+    NSURL *plus_url = [NSURL fileURLWithPath:plusPath];
+    UIImage* focusImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:focus_url]];
+    UIImage* plusImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:plus_url]];
+    focusImageView.image = focusImage;
+    _plusImageView = [[UIImageView alloc] initWithFrame:CGRectMake((focusImageView.bounds.size.width - 25) / 2, (focusImageView.bounds.size.height - 25) / 2, 25, 25)];
+    _plusImageView.image = plusImage;
+    [_focusView addSubview:focusImageView];
+    [_focusView addSubview:_plusImageView];
+    _focusView.layer.zPosition = 100;
+    
     _isUsingFrontCamera = NO;
     _captureSession = [[AVCaptureSession alloc] init];
     _sessionQueue = dispatch_queue_create(sessionQueueLabel.UTF8String, nil);
@@ -127,6 +185,8 @@ static const CGFloat FIRconstantScale = 1.0;
 #pragma mark - On-Device Detection
 
 - (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height {
+    
+    
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
         [self removeDetectionAnnotations];
@@ -141,7 +201,7 @@ static const CGFloat FIRconstantScale = 1.0;
                 for (FIRVisionTextLine *line in block.lines) {
                     NSLog(@"%@", line.text);
                     for (int i=0; i< self.companies.count; i ++) {
-                        NSString* company = self->_companies[i];
+                        NSString* company = self->_companies.allKeys[i];
                         if ([line.text.lowercaseString containsString:company.lowercaseString]) {
                             CGFloat min = 0,max = 0;
                             for (FIRVisionTextElement *element in line.elements) {
@@ -160,11 +220,34 @@ static const CGFloat FIRconstantScale = 1.0;
                             }
                             CGRect normalizedRect = CGRectMake(line.frame.origin.x / width,  min/ height,  line.frame.size.width / width,  (max - min)/ height);
                             CGRect convertedRect = [self->_previewLayer rectForMetadataOutputRectOfInterest:normalizedRect];
-                            [UIUtilities addRectangle:convertedRect toView:self->_annotationOverlayView color:[UIColor colorWithRed:121.0/255.0 green:176.0/255.0 blue:10.0/255.0 alpha:0.5]];
-//                            UILabel *label = [[UILabel alloc] initWithFrame:convertedRect];
-//                            label.text = self->_companies[i];
-//                            label.adjustsFontSizeToFitWidth = YES;
-//                            [self.annotationOverlayView addSubview:label];
+                            CGRect newRect = CGRectMake(convertedRect.origin.x + convertedRect.size.width / 2 - 40, convertedRect.origin.y, 80, convertedRect.size.height);
+
+                            UILabel *label = [[UILabel alloc] initWithFrame:newRect];
+                            label.textColor = UIColor.whiteColor;
+                            label.text = self->_companies.allValues[i];
+                            label.adjustsFontSizeToFitWidth = YES;
+                            [self.annotationOverlayView addSubview:label];
+                            CGFloat left = (self.view.bounds.size.width - 300) / 2;
+                            CGFloat right = (self.view.bounds.size.width - 300) / 2 + 300;
+                            CGFloat top = 200;
+                            CGFloat bottom = 260;
+                            if (label.frame.origin.x  > left && label.frame.origin.x + label.frame.size.width < right) {
+                                if (label.frame.origin.y > top && label.frame.origin.y + label.frame.size.height < bottom) {
+                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                        [self->_plusImageView setHidden:YES];
+                                        [UIView animateWithDuration:0.5 animations:^{
+                                            self->_focusView.transform = CGAffineTransformMakeScale(1.1, 1.1);
+                                        } completion:^(BOOL finished) {
+                                            self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
+                                        }];
+                                        [channel invokeMethod:@"detect" arguments:label.text];
+                                    });
+                                    return;
+                                }
+                            }
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self->_plusImageView setHidden:NO];
+                            });
                         }
                     }
                 }

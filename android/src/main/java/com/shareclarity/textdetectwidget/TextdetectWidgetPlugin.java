@@ -19,9 +19,11 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class TextdetectWidgetPlugin implements MethodCallHandler {
     public static Result mResult;
     static Activity mActivity;
+    public static MethodChannel channel;
+
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "textdetect_widget");
+        channel = new MethodChannel(registrar.messenger(), "textdetect_widget");
         mActivity = registrar.activity();
         FirebaseApp.initializeApp(mActivity);
         channel.setMethodCallHandler(new TextdetectWidgetPlugin());
