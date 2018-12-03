@@ -139,16 +139,16 @@ public class TextRecognitionProcessor {
 					Boolean lineFlag = true;
 					Boolean lineBreak = false;
 
-					if (!line.getText().toLowerCase().contains(subStrings[0].toLowerCase())) {//No Containing
+					if (!line.getText().contains(subStrings[0])) {//No Containing
 						lineFlag = false;
-					} else if (!line.getText().toLowerCase().contains(company.toLowerCase())) { // In this case line break or No containting
+					} else if (!line.getText().contains(company)) { // In this case line break or No containting
 						lineFlag = false;
 						for (int u =1;u<subStrings.length;u++) {
-							if (!line.getText().toLowerCase().contains(subStrings[u].toLowerCase())) {
+							if (!line.getText().contains(subStrings[u])) {
 								if (j != lines.size() - 1 ) {
 									String test = lines.get(j+1).getText();
 								}
-								if (j != lines.size() - 1 && lines.get(j+1).getText().toLowerCase().contains(subStrings[u].toLowerCase())) {
+								if (j != lines.size() - 1 && lines.get(j+1).getText().contains(subStrings[u])) {
 									lineFlag = true;lineBreak = true;
 								} else {
 									lineFlag = false;lineBreak = false;
@@ -165,7 +165,7 @@ public class TextRecognitionProcessor {
 						//Finding location of detected text
 						for (int k = 0; k < elements.size(); k++) {
 							FirebaseVisionText.Element element = elements.get(k);
-							if (company.toLowerCase().contains(element.getText().toLowerCase())) {
+							if (company.contains(element.getText())) {
 								if (!elementFlag) {
 									elementFlag = true;
 									min = element.getBoundingBox().left;
@@ -202,6 +202,7 @@ public class TextRecognitionProcessor {
 						//Tag rect
 						RectF newRect = new RectF();
 						newRect.left = pxToDp((int)(rectF.width() / 2 + rectF.left - 100));
+
 						newRect.top = pxToDp((int)rectF.top);
 						newRect.right = pxToDp((int)(rectF.width() / 2 + rectF.left + 100));
 						newRect.bottom = pxToDp((int)(rectF.bottom));

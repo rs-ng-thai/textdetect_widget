@@ -1,6 +1,8 @@
 #import <Flutter/Flutter.h>
-
-FlutterMethodChannel* channel;
 @interface TextdetectWidgetPlugin : NSObject<FlutterPlugin>
 
+@property (nonatomic, strong) NSObject<FlutterTextureRegistry> *textures;
+
 @end
+
+extern FlutterMethodChannel* channel;
