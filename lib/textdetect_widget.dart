@@ -1,40 +1,68 @@
 import 'dart:async';
-
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-class TextdetectWidget {
-  static const MethodChannel _channel =
-      const MethodChannel('textdetect_widget');
-  int textureId;
-  bool get isInitialized => textureId != null;
+typedef void TextdetectWidgetCreatedCallback(TextdetectController controller);
 
-  TextdetectWidget(Future<dynamic> handler(MethodCall call)) : super() {
+class TextdetectWidget extends StatefulWidget {
+  const TextdetectWidget({
+    Key key,
+    this.onTextDetectWidgetCreated,
+    this.companies,
+  }) : super(key: key);
+
+  final TextdetectWidgetCreatedCallback onTextDetectWidgetCreated;
+  final Map<String, String> companies;
+  @override
+  TextdetectWidgetState createState() => new TextdetectWidgetState();
+}
+
+class TextdetectController {
+
+  TextdetectController._(int id)
+      : _channel = new MethodChannel('textdetect_widget_$id');
+
+  final MethodChannel _channel;
+
+  setHandler(Future<dynamic> handler(MethodCall call)) {
     _channel.setMethodCallHandler(handler);
   }
 
-  Future<String> openCamera(Map<String, String> companies) async {
-    final String result = await _channel.invokeMethod('openCamera',{"companies":companies});
-    return result;
+  hideFocus() async {
+    await _channel.invokeMethod('hideFocus');
   }
-
-  Future<dynamic> _handelTextDetect(MethodCall call) async {
-    switch(call.method) {
-      case "detect":
-        debugPrint(call.arguments);
-        return new Future.value("");
-    }
-  }
-
-  Future<int> initialize(double width, double height) async {
-    textureId = await _channel.invokeMethod('create', {
-      'width': width,
-      'height': height,
-    });
-    return textureId;
-  }
-
-  Future<Null> dispose() =>
-      _channel.invokeMethod('dispose', {'textureId': textureId});
 
 }
+class TextdetectWidgetState extends State<TextdetectWidget> with WidgetsBindingObserver{
+
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidView(
+        viewType: 'textdetect_widget',
+        onPlatformViewCreated: _onPlatformViewCreated,
+        creationParams: widget.companies,
+        creationParamsCodec: new StandardMessageCodec(),
+      );
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return UiKitView(
+        viewType: "textdetect_widget",
+        onPlatformViewCreated: _onPlatformViewCreated,
+        creationParams: widget.companies,
+        creationParamsCodec: new StandardMessageCodec(),
+      );
+    }
+    return Text(
+        '$defaultTargetPlatform is not yet supported by the text_view plugin');
+  }
+
+  void _onPlatformViewCreated(int id) {
+    if (widget.onTextDetectWidgetCreated == null) {
+      return;
+    }
+    widget.onTextDetectWidgetCreated(new TextdetectController._(id));
+  }
+}
+

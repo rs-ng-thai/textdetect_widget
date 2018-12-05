@@ -13,64 +13,56 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
 
-  TextdetectWidget _controller;
-  final _width = 200.0;
-  final _height = 200.0;
-
+  Map<String, String> companies;
+  TextdetectController textdetectController;
   @override
   void initState() {
     super.initState();
-    _controller = TextdetectWidget(_handelTextDetect);
-  }
-
-  void _openCamera() {
-    var companies = <String, String>{
+    companies = <String, String>{
       "Tourism Holdings Limited": "THL.NZ",
       "Port of Tauranga Limited": "POT.NZ",
       "Metlifecare Limited": "MET.NZ"
     };
-
-    _controller.openCamera(companies).then((String result) {
-      print("result:  $result");
-    });
-  }
-
-  Future<Null> initializeController() async {
-
-    await _controller.initialize(_width, _height);
-    var textureId = _controller.textureId;
-    print("Texture ID is $textureId");
-    setState(() {});
   }
 
   Future<dynamic> _handelTextDetect(MethodCall call) async {
     switch(call.method) {
       case "detect":
         debugPrint(call.arguments);
-        initializeController();
-        return new Future.value("");
+        setState(() {
+
+        });
     }
+    return 0;
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Text Detection Sample'),
-        ),
-        body: Center(
-          child: CupertinoButton(
-            onPressed: _openCamera,
-            child: _controller.isInitialized
-                ? new Texture(textureId: _controller.textureId)
-                : Text("Open Camera"),
-
-          )
-        ),
-      ),
+        home: Scaffold(
+            appBar: AppBar(title: const Text('Flutter TextView example')),
+            body: Column(children: [
+              Center(
+                  child: Container(
+                      width: 300,
+                      height: 500,
+                      child: TextdetectWidget(
+                        onTextDetectWidgetCreated: _onTextDetectCreated,
+                        companies: companies,
+                      ))),
+              Expanded(
+                  flex: 3,
+                  child: Container(
+                      color: Colors.blue[100],
+                      child: Center(child: Text("Hello from Flutter!"))))
+            ]))
     );
+
+  }
+
+  void _onTextDetectCreated(TextdetectController controller) {
+    textdetectController = controller;
+    controller.setHandler(_handelTextDetect);
   }
 }

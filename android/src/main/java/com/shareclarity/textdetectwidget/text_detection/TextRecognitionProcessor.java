@@ -19,6 +19,8 @@ import android.content.res.Resources;
 import android.graphics.Camera;
 import android.graphics.Point;
 import android.graphics.RectF;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +41,9 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
-import com.shareclarity.textdetectwidget.CameraActivity;
+import com.shareclarity.textdetectwidget.FlutterCameraView;
 import com.shareclarity.textdetectwidget.R;
+import com.shareclarity.textdetectwidget.TextdetectWidgetPlugin;
 import com.shareclarity.textdetectwidget.others.FrameMetadata;
 import com.shareclarity.textdetectwidget.others.GraphicOverlay;
 
@@ -66,7 +70,7 @@ public class TextRecognitionProcessor {
 
 	private HashMap<String,String> companies;
 
-	private Context context;
+	private FlutterCameraView flutterView;
 
 	private final FirebaseVisionTextRecognizer detector;
 
@@ -76,15 +80,13 @@ public class TextRecognitionProcessor {
 	// the model can handle.
 	private final AtomicBoolean shouldThrottle = new AtomicBoolean(false);
 
-	public TextRecognitionProcessor(HashMap<String,String> _companies, Context _context) {
+	public TextRecognitionProcessor(HashMap<String,String> _companies, FlutterCameraView _view) {
 		detector = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
 		companies = _companies;
-		context = _context;
+		flutterView = _view;
 	}
 
 	//region ----- Exposed Methods -----
-
-
 	public void stop() {
 		try {
 			detector.close();
@@ -120,8 +122,8 @@ public class TextRecognitionProcessor {
 
 
 	protected void onSuccess(@NonNull FirebaseVisionText results, @NonNull FrameMetadata frameMetadata, @NonNull GraphicOverlay graphicOverlay) {
-		CameraActivity cameraActivity = (CameraActivity)context;
-		cameraActivity.findViewById(R.id.imv_plus).setAlpha(1);
+
+//		flutterView.plusImageView.setAlpha((float) 1.0);
 		graphicOverlay.clear();
 		for (int p = 0; p < companies.keySet().size(); p++) {
 			String company = (String)companies.keySet().toArray()[p];
@@ -184,11 +186,11 @@ public class TextRecognitionProcessor {
 						RectF rectF = new RectF(min, line.getBoundingBox().top, max, line.getBoundingBox().bottom);
 
                         final String nickname = (String)companies.values().toArray()[p];
-						GraphicOverlay.Graphic textGraphic = new TextGraphic(context, rectF, nickname, graphicOverlay);
+						GraphicOverlay.Graphic textGraphic = new TextGraphic(TextdetectWidgetPlugin.mActivity, rectF, nickname, graphicOverlay);
 						textGraphic.setClickable(true);
 						graphicOverlay.add(textGraphic);
 
-                        Display display = cameraActivity.getWindowManager().getDefaultDisplay();
+                        Display display = TextdetectWidgetPlugin.mActivity.getWindowManager().getDefaultDisplay();
                         Point size = new Point();
                         display.getSize(size);
 
@@ -213,14 +215,24 @@ public class TextRecognitionProcessor {
 							if (newRect.top + 10 > focusRect.top && newRect.bottom + 10 < focusRect.bottom) {
 								//Blink animation
 								if (!tempFlag) {
-									Animation animation = AnimationUtils.loadAnimation(cameraActivity.getApplicationContext(), R.anim.blink);
-									cameraActivity.findViewById(R.id.rl_focus).startAnimation(animation);
-									Animation animation1 = AnimationUtils.loadAnimation(cameraActivity.getApplicationContext(), R.anim.blink_resume);
-									cameraActivity.findViewById(R.id.rl_focus).startAnimation(animation1);
+									Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
+
+									flutterView.focusLayout.startAnimation(animation);
+									Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
+									flutterView.focusLayout.startAnimation(animation1);
 									tempFlag = true;
 								}
-								cameraActivity.findViewById(R.id.imv_plus).setAlpha(0);
-								channel.invokeMethod("detect",nickname);
+
+								Handler mainHandler = new Handler(Looper.getMainLooper());
+
+								Runnable myRunnable = new Runnable() {
+									@Override
+									public void run() {
+										flutterView.hidePlusImage();
+									} // This is your code
+								};
+								mainHandler.post(myRunnable);
+								flutterView.methodChannel.invokeMethod("detect",nickname);
 								return;
 							}
 						}

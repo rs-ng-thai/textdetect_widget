@@ -16,29 +16,15 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** TextdetectWidgetPlugin */
-public class TextdetectWidgetPlugin implements MethodCallHandler {
+public class TextdetectWidgetPlugin {
     public static Result mResult;
-    static Activity mActivity;
+    public static Activity mActivity;
     public static MethodChannel channel;
 
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
-        channel = new MethodChannel(registrar.messenger(), "textdetect_widget");
+        registrar.platformViewRegistry().registerViewFactory("textdetect_widget",new TextDetectFactory(registrar.messenger()));
         mActivity = registrar.activity();
         FirebaseApp.initializeApp(mActivity);
-        channel.setMethodCallHandler(new TextdetectWidgetPlugin());
-    }
-
-    @Override
-    public void onMethodCall(MethodCall call, Result result) {
-        if (call.method.equals("openCamera")) {
-            HashMap<String,String> companyList  = call.argument("companies");
-            Intent intent = new Intent(mActivity, CameraActivity.class);
-            intent.putExtra("companies",companyList);
-            mResult = result;
-            mActivity.startActivity(intent);
-        } else {
-            result.notImplemented();
-        }
     }
 }

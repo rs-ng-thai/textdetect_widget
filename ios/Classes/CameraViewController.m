@@ -240,7 +240,8 @@ static const CGFloat FIRconstantScale = 1.0;
                                         } completion:^(BOOL finished) {
                                             self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
                                         }];
-                                        [channel invokeMethod:@"detect" arguments:label.text];
+//                                        [channel invokeMethod:@"detect" arguments:label.text];
+                                        [_delegate companyDetected:label.text];
                                     });
                                     return;
                                 }

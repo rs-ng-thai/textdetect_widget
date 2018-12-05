@@ -5,4 +5,3 @@
 
 @end
 
-extern FlutterMethodChannel* channel;

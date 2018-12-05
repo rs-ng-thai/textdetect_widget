@@ -76,8 +76,6 @@ public class CameraActivity extends AppCompatActivity {
             cameraSource = new CameraSource(this, graphicOverlay);
             cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
         }
-
-        cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(companies,this));
     }
 
     private void startCameraSource() {
