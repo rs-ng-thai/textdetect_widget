@@ -16,26 +16,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb73775c-c61c-4070-aad2-614964d84250" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/FlutterCameraView.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/TextDetectFactory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/src/main/res/layout/view_camera.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ios/Classes/FlutterCameraView.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ios/Classes/FlutterCameraView.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/CameraActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/CameraActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/TextdetectWidgetPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/TextdetectWidgetPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/res/layout/activity_camera.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/res/layout/activity_camera.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/Runner/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Runner/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/CameraViewController.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/CameraViewController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/textdetect_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/textdetect_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/textdetect_widget.iml" beforeDir="false" afterPath="$PROJECT_DIR$/textdetect_widget.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.dart_tool/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
@@ -68,8 +49,8 @@
       <file leaf-file-name="main.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="142">
-              <caret line="25" column="6" lean-forward="true" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
+            <state relative-caret-position="312">
+              <caret line="37" column="3" lean-forward="true" selection-start-line="28" selection-start-column="2" selection-end-line="37" selection-end-column="3" />
               <folding>
                 <element signature="e#0#40#0" expanded="true" />
               </folding>
@@ -77,11 +58,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pubspec.yaml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="30">
               <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="16" column="10" selection-start-line="16" selection-start-column="10" selection-end-line="16" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -161,7 +151,6 @@
       <list>
         <option value="$PROJECT_DIR$/ios/textdetect_widget.podspec" />
         <option value="$PROJECT_DIR$/android/build.gradle" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/android/src/main/res/layout/activity_camera.xml" />
         <option value="$PROJECT_DIR$/ios/Classes/CameraViewController.m" />
         <option value="$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.m" />
@@ -170,6 +159,7 @@
         <option value="$PROJECT_DIR$/lib/textdetect_widget.dart" />
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -562,13 +552,6 @@
         <state relative-caret-position="-1349" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="127" selection-start-line="3" selection-end-line="3" selection-end-column="127" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../../Tools/flutter/packages/flutter/lib/src/widgets/texture.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
@@ -588,11 +571,6 @@
         <state relative-caret-position="105">
           <caret line="12" column="1" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
         </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../../Tools/flutter/packages/flutter/lib/src/widgets/media_query.dart">
@@ -691,16 +669,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="142">
-          <caret line="25" column="6" lean-forward="true" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
-          <folding>
-            <element signature="e#0#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/textdetect_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="98">
@@ -722,6 +690,28 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
           <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="312">
+          <caret line="37" column="3" lean-forward="true" selection-start-line="28" selection-start-column="2" selection-end-line="37" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ios/Classes/TextdetectWidgetPlugin.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="16" column="10" selection-start-line="16" selection-start-column="10" selection-end-line="16" selection-end-column="10" />
         </state>
       </provider>
     </entry>

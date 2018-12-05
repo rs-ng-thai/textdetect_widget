@@ -5,12 +5,34 @@ A flutter plugin to integrate the Google MLKit for iOS and Android. Live Camera 
 
 ## USAGE
 
-To open camera from device, we need to pass companies list to detect in camera.
+TextdetectWidget is a live camera detection widget which detects companies from camera frame.
+
 ```
-void _openCamera() {
-    var companies = ["Tourism Holdings Limited","Port of Tauranga Limited","Metlifecare Limited"];
-    TextdetectWidget.openCamera(companies);
+TextdetectWidget(
+   onTextDetectWidgetCreated: _onTextDetectCreated,
+   companies: companies,
+)))
+```
+
+And then add detection handler like below.
+
+```
+void _onTextDetectCreated(TextdetectController controller) {
+    textdetectController = controller;
+    controller.setHandler(_handelTextDetect);
 }
 ```
 
+```
+Future<dynamic> _handelTextDetect(MethodCall call) async {
+    switch(call.method) {
+      case "detect":
+        debugPrint(call.arguments);
+        setState(() {
+
+        });
+    }
+    return 0;
+}
+```
 ## 
