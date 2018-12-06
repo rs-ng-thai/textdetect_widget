@@ -120,7 +120,10 @@
 }
 
 - (void)companyDetected:(NSString *)nickname {
-    [_channel invokeMethod:@"detect" arguments:nil];
+    [_channel invokeMethod:@"detect" arguments:nickname];
 }
 
+- (void)companyMovedOut:(NSString *)nickname {
+    [_channel invokeMethod:@"moveout" arguments:nickname];
+}
 @end

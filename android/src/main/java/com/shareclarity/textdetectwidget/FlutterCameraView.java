@@ -117,7 +117,6 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
             default:
                 result.notImplemented();
         }
-
     }
 
     @Override

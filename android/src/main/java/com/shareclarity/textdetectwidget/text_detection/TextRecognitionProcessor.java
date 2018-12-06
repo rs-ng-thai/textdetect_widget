@@ -19,6 +19,7 @@ import android.content.res.Resources;
 import android.graphics.Camera;
 import android.graphics.Point;
 import android.graphics.RectF;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -123,7 +124,7 @@ public class TextRecognitionProcessor {
 
 	protected void onSuccess(@NonNull FirebaseVisionText results, @NonNull FrameMetadata frameMetadata, @NonNull GraphicOverlay graphicOverlay) {
 
-//		flutterView.plusImageView.setAlpha((float) 1.0);
+		flutterView.plusImageView.setAlpha((float) 1.0);
 		graphicOverlay.clear();
 		for (int p = 0; p < companies.keySet().size(); p++) {
 			String company = (String)companies.keySet().toArray()[p];
@@ -212,29 +213,49 @@ public class TextRecognitionProcessor {
 						RectF testRect = newRect;
 
 						if (newRect.left + 80 > focusRect.left && newRect.right + 80 < focusRect.right) {
-							if (newRect.top + 10 > focusRect.top && newRect.bottom + 10 < focusRect.bottom) {
+							if (newRect.top + 30 > focusRect.top && newRect.bottom + 30 < focusRect.bottom) {
 								//Blink animation
 								if (!tempFlag) {
+									graphicOverlay.clear();
+									graphicOverlay.add(textGraphic);
 									Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
 
 									flutterView.focusLayout.startAnimation(animation);
 									Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
 									flutterView.focusLayout.startAnimation(animation1);
 									tempFlag = true;
+
+									Handler mainHandler = new Handler(Looper.getMainLooper());
+
+									Runnable myRunnable = new Runnable() {
+										@Override
+										public void run() {
+											flutterView.hidePlusImage();
+										} // This is your code
+									};
+									mainHandler.post(myRunnable);
+									MediaPlayer mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+
+									try {
+										if (mp.isPlaying()) {
+											mp.stop();
+											mp.release();
+
+											mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+										}
+
+										mp.start();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+									flutterView.methodChannel.invokeMethod("detect",nickname);
+
 								}
-
-								Handler mainHandler = new Handler(Looper.getMainLooper());
-
-								Runnable myRunnable = new Runnable() {
-									@Override
-									public void run() {
-										flutterView.hidePlusImage();
-									} // This is your code
-								};
-								mainHandler.post(myRunnable);
-								flutterView.methodChannel.invokeMethod("detect",nickname);
 								return;
 							}
+						}
+						if (tempFlag) {
+							flutterView.methodChannel.invokeMethod("moveout",nickname);
 						}
 						tempFlag = false;
 					}

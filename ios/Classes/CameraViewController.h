@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CompanyDetectDelegate <NSObject>
 @optional
 - (void)companyDetected:(NSString*)nickname;
+- (void)companyMovedOut:(NSString*)nickname;
 @end
 
 @interface CameraViewController : UIViewController <FlutterTextureRegistry>

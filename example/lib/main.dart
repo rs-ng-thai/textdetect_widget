@@ -16,6 +16,8 @@ class _MyAppState extends State<MyApp> {
 
   Map<String, String> companies;
   TextdetectController textdetectController;
+  String tickerString;
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +33,17 @@ class _MyAppState extends State<MyApp> {
       case "detect":
         debugPrint(call.arguments);
         setState(() {
-
+          tickerString = call.arguments;
         });
+        break;
+      case "moveout":
+        debugPrint(call.arguments);
+        setState(() {
+          tickerString = "Move out";
+        });
+        break;
+      default:
+        break;
     }
     return 0;
   }
@@ -41,22 +52,23 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         home: Scaffold(
-            appBar: AppBar(title: const Text('Flutter TextView example')),
-            body: Column(children: [
-              Center(
-                  child: Container(
-                      width: 300,
-                      height: 500,
-                      child: TextdetectWidget(
-                        onTextDetectWidgetCreated: _onTextDetectCreated,
-                        companies: companies,
-                      ))),
-              Expanded(
-                  flex: 3,
-                  child: Container(
-                      color: Colors.blue[100],
-                      child: Center(child: Text("Hello from Flutter!"))))
-            ]))
+            body: Stack(
+              alignment: FractionalOffset.center,
+              children: <Widget>[
+                TextdetectWidget(
+                  onTextDetectWidgetCreated: _onTextDetectCreated,
+                  companies: companies,
+                ),
+                Text(
+                  tickerString != null ? tickerString : '',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 60.0
+                  ),
+                )
+              ],
+            )
+        )
     );
 
   }

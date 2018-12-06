@@ -29,10 +29,6 @@ class TextdetectController {
     _channel.setMethodCallHandler(handler);
   }
 
-  hideFocus() async {
-    await _channel.invokeMethod('hideFocus');
-  }
-
 }
 class TextdetectWidgetState extends State<TextdetectWidget> with WidgetsBindingObserver{
 
