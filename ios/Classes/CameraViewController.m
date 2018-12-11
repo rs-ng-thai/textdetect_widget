@@ -23,6 +23,7 @@ static const CGFloat FIRconstantScale = 1.0;
     SystemSoundID mySound;
 }
 @property (nonatomic) BOOL isFocused;
+@property (nonatomic) int focusedId;
 @property (nonatomic) bool isUsingFrontCamera;
 @property (nonatomic, nonnull) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic) AVCaptureSession *captureSession;
@@ -40,6 +41,7 @@ static const CGFloat FIRconstantScale = 1.0;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _focusedId = 0;
      _cameraView = [[UIView alloc] init];
         _cameraView.backgroundColor = UIColor.whiteColor;
         [self.view addSubview:_cameraView];
@@ -199,13 +201,13 @@ static const CGFloat FIRconstantScale = 1.0;
             return;
         }
         // Blocks.
-        for (FIRVisionTextBlock *block in text.blocks) {
+            for (FIRVisionTextBlock *block in text.blocks) {
                 // Lines.
                 for (FIRVisionTextLine *line in block.lines) {
                     NSLog(@"%@", line.text);
                     for (int i=0; i< self.companies.count; i ++) {
                         NSString* company = self->_companies.allKeys[i];
-                        if ([line.text containsString:company]) {
+                        if ([text.text containsString:company] && [block.text containsString:company] && [line.text containsString:company]) {
                             CGFloat min = 0,max = 0;
                             for (FIRVisionTextElement *element in line.elements) {
                                 if ([company containsString:element.text]) {
@@ -224,7 +226,7 @@ static const CGFloat FIRconstantScale = 1.0;
                             CGRect normalizedRect = CGRectMake(line.frame.origin.x / width,  min/ height,  line.frame.size.width / width,  (max - min)/ height);
                             CGRect convertedRect = [self->_previewLayer rectForMetadataOutputRectOfInterest:normalizedRect];
                             CGRect newRect = CGRectMake(convertedRect.origin.x + convertedRect.size.width / 2 - 40, convertedRect.origin.y, 80, convertedRect.size.height);
-
+                            
                             UILabel *label = [[UILabel alloc] initWithFrame:newRect];
                             label.textColor = UIColor.whiteColor;
                             label.text = self->_companies.allValues[i];
@@ -234,40 +236,43 @@ static const CGFloat FIRconstantScale = 1.0;
                             CGFloat right = (self.view.bounds.size.width - 300) / 2 + 300;
                             CGFloat top = 200;
                             CGFloat bottom = 260;
-                            if (label.frame.origin.x  > left && label.frame.origin.x + label.frame.size.width < right) {
-                                if (label.frame.origin.y > top && label.frame.origin.y + label.frame.size.height < bottom) {
-                                    [self removeDetectionAnnotations];
-                                    [self.annotationOverlayView addSubview:label];
-                                    if (!self.isFocused) {
+                            if (label.frame.origin.x  > left && label.frame.origin.x + label.frame.size.width < right && label.frame.origin.y > top && label.frame.origin.y + label.frame.size.height < bottom) {
+                                [self removeDetectionAnnotations];
+                                [self.annotationOverlayView addSubview:label];
+                                if (!self.isFocused) {
+                                    NSLog(@"%@",@"Focused");
+                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                        [self.plusImageView setHidden:YES];
+                                        [UIView animateWithDuration:0.5 animations:^{
+                                            self->_focusView.transform = CGAffineTransformMakeScale(1.1, 1.1);
+                                        } completion:^(BOOL finished) {
+                                            self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
+                                        }];
+                                        NSString* soundPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/detect_sound.mp3" ofType:nil]; AudioServicesCreateSystemSoundID((__bridge CFURLRef _Nonnull)([[NSURL alloc] initWithString:soundPath]), &self->mySound);
+                                        AudioServicesPlaySystemSound(self->mySound);
+                                        [self.delegate companyDetected:label.text];
+                                        self.isFocused = YES;
+                                        self.focusedId = i;
+                                        return;
+                                    });
+                                }
+                            } else {
+                                if (self.isFocused) {
+                                    if (self.focusedId == i) {
+                                        [self.delegate companyMovedOut:label.text];
+                                        self.isFocused = NO;
                                         dispatch_async(dispatch_get_main_queue(), ^{
-                                            [self->_plusImageView setHidden:YES];
-                                            [UIView animateWithDuration:0.5 animations:^{
-                                                self->_focusView.transform = CGAffineTransformMakeScale(1.1, 1.1);
-                                            } completion:^(BOOL finished) {
-                                                self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
-                                            }];
-                                            NSString* soundPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/detect_sound.mp3" ofType:nil]; AudioServicesCreateSystemSoundID((__bridge CFURLRef _Nonnull)([[NSURL alloc] initWithString:soundPath]), &self->mySound);
-                                            AudioServicesPlaySystemSound(self->mySound);
-                                            [self.delegate companyDetected:label.text];
-                                            self.isFocused = YES;
+                                            [self->_plusImageView setHidden:NO];
                                         });
                                     }
-                                    return;
+                                    
                                 }
+                                
                             }
-                            if (self.isFocused) {
-                                [self.delegate companyMovedOut:label.text];
-                            }
-                            self.isFocused = NO;
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self->_plusImageView setHidden:NO];
-                            });
                         }
                     }
                 }
-            
-            
-        }
+            }
     }];
 }
 
@@ -395,6 +400,10 @@ static const CGFloat FIRconstantScale = 1.0;
     } else {
         _previewOverlayView.image = rotatedImage;
     }
+    CGImageRelease( cgImage );
+}
+- (void)didReceiveMemoryWarning {
+    NSLog(@"%@",@"Did Receive Memory warning");
 }
 
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate

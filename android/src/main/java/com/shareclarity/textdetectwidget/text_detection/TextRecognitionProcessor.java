@@ -75,7 +75,8 @@ public class TextRecognitionProcessor {
 
 	private final FirebaseVisionTextRecognizer detector;
 
-	private boolean tempFlag = false;
+	private boolean isFocused = false;
+	private int focusedId = 0;
 
 	// Whether we should ignore process(). This is usually caused by feeding input data faster than
 	// the model can handle.
@@ -126,144 +127,143 @@ public class TextRecognitionProcessor {
 
 		flutterView.plusImageView.setAlpha((float) 1.0);
 		graphicOverlay.clear();
-		for (int p = 0; p < companies.keySet().size(); p++) {
-			String company = (String)companies.keySet().toArray()[p];
-			String[] subStrings = company.split(" ");
-			Log.d(TAG,results.getText());
-			List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
-			for (int i = 0; i < blocks.size(); i++) {
-				FirebaseVisionText.TextBlock block = blocks.get(i);
-				Log.d(TAG,block.getText());
 
-				List<FirebaseVisionText.Line> lines = block.getLines();
+		List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
+		for (int i = 0; i < blocks.size(); i++) {
+			FirebaseVisionText.TextBlock block = blocks.get(i);
+			Log.d(TAG,block.getText());
+			List<FirebaseVisionText.Line> lines = block.getLines();
 
-				for (int j = 0; j < lines.size(); j++) {
-					FirebaseVisionText.Line line = lines.get(j);
-					Boolean lineFlag = true;
-					Boolean lineBreak = false;
+			for (int j = 0; j < lines.size(); j++) {
+				for (int p = 0; p < companies.keySet().size(); p++) {
+					String company = (String) companies.keySet().toArray()[p];
+					String[] subStrings = company.split(" ");
+					if (results.getText().contains(company) && block.getText().contains(company)) {
+						FirebaseVisionText.Line line = lines.get(j);
+						Boolean lineFlag = true;
+						Boolean lineBreak = false;
 
-					if (!line.getText().contains(subStrings[0])) {//No Containing
-						lineFlag = false;
-					} else if (!line.getText().contains(company)) { // In this case line break or No containting
-						lineFlag = false;
-						for (int u =1;u<subStrings.length;u++) {
-							if (!line.getText().contains(subStrings[u])) {
-								if (j != lines.size() - 1 ) {
-									String test = lines.get(j+1).getText();
-								}
-								if (j != lines.size() - 1 && lines.get(j+1).getText().contains(subStrings[u])) {
-									lineFlag = true;lineBreak = true;
-								} else {
-									lineFlag = false;lineBreak = false;
+						if (!line.getText().contains(subStrings[0])) {//No Containing
+							lineFlag = false;
+						} else if (!line.getText().contains(company)) { // In this case line break or No containting
+							lineFlag = false;
+							for (int u =1;u<subStrings.length;u++) {
+								if (!line.getText().contains(subStrings[u])) {
+									if (j != lines.size() - 1 ) {
+										String test = lines.get(j+1).getText();
+									}
+									if (j != lines.size() - 1 && lines.get(j+1).getText().contains(subStrings[u])) {
+										lineFlag = true;lineBreak = true;
+									} else {
+										lineFlag = false;lineBreak = false;
+									}
 								}
 							}
 						}
-					}
 
-					if (lineFlag) {
-						int min = line.getBoundingBox().left;
-						int max = line.getBoundingBox().right;
-						List<FirebaseVisionText.Element> elements = lines.get(j).getElements();
-						boolean elementFlag = false;
-						//Finding location of detected text
-						for (int k = 0; k < elements.size(); k++) {
-							FirebaseVisionText.Element element = elements.get(k);
-							if (company.contains(element.getText())) {
-								if (!elementFlag) {
-									elementFlag = true;
-									min = element.getBoundingBox().left;
-									max = element.getBoundingBox().right;
-								} else {
-									if (min > element.getBoundingBox().left) {
+						if (lineFlag) {
+							int min = line.getBoundingBox().left;
+							int max = line.getBoundingBox().right;
+							List<FirebaseVisionText.Element> elements = lines.get(j).getElements();
+							boolean elementFlag = false;
+							//Finding location of detected text
+							for (int k = 0; k < elements.size(); k++) {
+								FirebaseVisionText.Element element = elements.get(k);
+								if (company.contains(element.getText())) {
+									if (!elementFlag) {
+										elementFlag = true;
 										min = element.getBoundingBox().left;
-									}
-									if (max < element.getBoundingBox().right) {
 										max = element.getBoundingBox().right;
+									} else {
+										if (min > element.getBoundingBox().left) {
+											min = element.getBoundingBox().left;
+										}
+										if (max < element.getBoundingBox().right) {
+											max = element.getBoundingBox().right;
+										}
 									}
 								}
 							}
-						}
-						//Add Rect to overlay
-						RectF rectF = new RectF(min, line.getBoundingBox().top, max, line.getBoundingBox().bottom);
+							//Add Rect to overlay
+							RectF rectF = new RectF(min, line.getBoundingBox().top, max, line.getBoundingBox().bottom);
 
-                        final String nickname = (String)companies.values().toArray()[p];
-						GraphicOverlay.Graphic textGraphic = new TextGraphic(TextdetectWidgetPlugin.mActivity, rectF, nickname, graphicOverlay);
-						textGraphic.setClickable(true);
-						graphicOverlay.add(textGraphic);
+							final String nickname = (String)companies.values().toArray()[p];
+							GraphicOverlay.Graphic textGraphic = new TextGraphic(TextdetectWidgetPlugin.mActivity, rectF, nickname, graphicOverlay);
+							textGraphic.setClickable(true);
+							graphicOverlay.add(textGraphic);
 
-                        Display display = TextdetectWidgetPlugin.mActivity.getWindowManager().getDefaultDisplay();
-                        Point size = new Point();
-                        display.getSize(size);
+							Display display = TextdetectWidgetPlugin.mActivity.getWindowManager().getDefaultDisplay();
+							Point size = new Point();
+							display.getSize(size);
 
-						//Focus
-						RectF focusRect = new RectF();
-						focusRect.left = (pxToDp(size.x) - 300) / 2;
-						focusRect.top = 100;
-						focusRect.right = focusRect.left + 300;
-						focusRect.bottom = 160;
+							//Focus
+							RectF focusRect = new RectF();
+							focusRect.left = (pxToDp(size.x) - 300) / 2;
+							focusRect.top = 100;
+							focusRect.right = focusRect.left + 300;
+							focusRect.bottom = 160;
 
-						//Tag rect
-						RectF newRect = new RectF();
-						newRect.left = pxToDp((int)(rectF.width() / 2 + rectF.left - 100));
+							//Tag rect
+							RectF newRect = new RectF();
+							newRect.left = pxToDp((int)(rectF.width() / 2 + rectF.left - 100));
 
-						newRect.top = pxToDp((int)rectF.top);
-						newRect.right = pxToDp((int)(rectF.width() / 2 + rectF.left + 100));
-						newRect.bottom = pxToDp((int)(rectF.bottom));
+							newRect.top = pxToDp((int)rectF.top);
+							newRect.right = pxToDp((int)(rectF.width() / 2 + rectF.left + 100));
+							newRect.bottom = pxToDp((int)(rectF.bottom));
 
-						RectF testRect = newRect;
+							RectF testRect = newRect;
 
-						if (newRect.left + 80 > focusRect.left && newRect.right + 80 < focusRect.right) {
-							if (newRect.top + 30 > focusRect.top && newRect.bottom + 30 < focusRect.bottom) {
-								//Blink animation
-								if (!tempFlag) {
+							if (newRect.left + 80 > focusRect.left && newRect.right + 80 < focusRect.right) {
+								if (newRect.top + 30 > focusRect.top && newRect.bottom + 30 < focusRect.bottom) {
 									graphicOverlay.clear();
 									graphicOverlay.add(textGraphic);
-									Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
+									//Blink animation
+									if (!isFocused) {
+										Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
+										flutterView.focusLayout.startAnimation(animation);
+										Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
+										flutterView.focusLayout.startAnimation(animation1);
+										isFocused = true;
+										focusedId = p;
+										Handler mainHandler = new Handler(Looper.getMainLooper());
+										Runnable myRunnable = new Runnable() {
+											@Override
+											public void run() {
+												flutterView.hidePlusImage();
+											} // This is your code
+										};
+										mainHandler.post(myRunnable);
+										MediaPlayer mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+										try {
+											if (mp.isPlaying()) {
+												mp.stop();
+												mp.release();
 
-									flutterView.focusLayout.startAnimation(animation);
-									Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
-									flutterView.focusLayout.startAnimation(animation1);
-									tempFlag = true;
-
-									Handler mainHandler = new Handler(Looper.getMainLooper());
-
-									Runnable myRunnable = new Runnable() {
-										@Override
-										public void run() {
-											flutterView.hidePlusImage();
-										} // This is your code
-									};
-									mainHandler.post(myRunnable);
-									MediaPlayer mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
-
-									try {
-										if (mp.isPlaying()) {
-											mp.stop();
-											mp.release();
-
-											mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+												mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+											}
+											mp.start();
+										} catch (Exception e) {
+											e.printStackTrace();
 										}
+										flutterView.methodChannel.invokeMethod("detect",nickname);
 
-										mp.start();
-									} catch (Exception e) {
-										e.printStackTrace();
 									}
-									flutterView.methodChannel.invokeMethod("detect",nickname);
-
+									return;
 								}
-								return;
 							}
-						}
-						if (tempFlag) {
-							flutterView.methodChannel.invokeMethod("moveout",nickname);
-						}
-						tempFlag = false;
-					}
+							if (isFocused && focusedId == p) {
+								flutterView.methodChannel.invokeMethod("moveout",nickname);
+								isFocused = false;
+							}
 
-					if (lineBreak) {
-						//... This code will be used later
+						}
+
+						if (lineBreak) {
+							//... This code will be used later
+						}
 					}
 				}
+
 			}
 		}
 	}

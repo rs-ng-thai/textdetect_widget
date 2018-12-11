@@ -22,10 +22,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     companies = <String, String>{
-      "Tourism Holdings Limited": "THL.NZ",
-      "Port of Tauranga Limited": "POT.NZ",
-      "Metlifecare Limited": "MET.NZ"
+      "Telstra Corporation Limited": "THL.NZ",
+      "Pacific Edge Limited": "POT.NZ",
+      "Trade Me Limited and Serko Limited": "MET.NZ"
     };
+//    for (int i=0;i<500;i++) {
+//      companies["companyname_$i"] = "comapny_`$i";
+//    }
   }
 
   Future<dynamic> _handelTextDetect(MethodCall call) async {
