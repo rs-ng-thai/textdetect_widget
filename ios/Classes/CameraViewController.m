@@ -43,7 +43,7 @@ static const CGFloat FIRconstantScale = 1.0;
     [super viewDidLoad];
     _focusedId = 0;
      _cameraView = [[UIView alloc] init];
-        _cameraView.backgroundColor = UIColor.whiteColor;
+        _cameraView.backgroundColor = [UIColor colorWithRed:31.0/255.0 green:63.0/255.0 blue:95.0/255.0 alpha:1.0];
         [self.view addSubview:_cameraView];
         [_cameraView setTranslatesAutoresizingMaskIntoConstraints:NO];
         NSLayoutConstraint *leftConstraint = [NSLayoutConstraint
