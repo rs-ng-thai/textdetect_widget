@@ -1,7 +1,9 @@
 package com.shareclarity.textdetectwidget;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +33,8 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
 
+    private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks;
+
     public RelativeLayout focusLayout;
     public ImageView plusImageView;
 
@@ -42,6 +46,44 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
         methodChannel = new MethodChannel(messenger, "textdetect_widget_" + id);
         methodChannel.setMethodCallHandler(this);
         companies = (HashMap<String, String>)object;
+        this.activityLifecycleCallbacks =
+                new Application.ActivityLifecycleCallbacks() {
+                    @Override
+                    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+
+                    @Override
+                    public void onActivityStarted(Activity activity) {
+
+                    }
+
+                    @Override
+                    public void onActivityResumed(Activity activity) {
+                        startCameraSource();
+                    }
+
+                    @Override
+                    public void onActivityPaused(Activity activity) {
+                        preview.stop();
+                    }
+
+                    @Override
+                    public void onActivityStopped(Activity activity) {
+
+                    }
+
+                    @Override
+                    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
+
+                    @Override
+                    public void onActivityDestroyed(Activity activity) {
+                        if (cameraSource != null) {
+                            cameraSource.release();
+                        }
+                    }
+                };
+        TextdetectWidgetPlugin.mActivity
+                .getApplication()
+                .registerActivityLifecycleCallbacks(this.activityLifecycleCallbacks);
     }
 
 

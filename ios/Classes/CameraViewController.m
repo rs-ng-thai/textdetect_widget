@@ -194,8 +194,13 @@ static const CGFloat FIRconstantScale = 1.0;
 - (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height {
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
-        [self removeDetectionAnnotations];
-        [self updatePreviewOverlayView];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //Your main thread code goes in here
+            [self removeDetectionAnnotations];
+            [self updatePreviewOverlayView];
+        });
+        
+        
         if (text == nil) {
             NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
             return;
@@ -401,6 +406,11 @@ static const CGFloat FIRconstantScale = 1.0;
         _previewOverlayView.image = rotatedImage;
     }
     CGImageRelease( cgImage );
+    
+}
+
+- (void)dealloc {
+    
 }
 - (void)didReceiveMemoryWarning {
     NSLog(@"%@",@"Did Receive Memory warning");

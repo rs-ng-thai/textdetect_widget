@@ -27,4 +27,6 @@ public class TextdetectWidgetPlugin {
         mActivity = registrar.activity();
         FirebaseApp.initializeApp(mActivity);
     }
+
+
 }
