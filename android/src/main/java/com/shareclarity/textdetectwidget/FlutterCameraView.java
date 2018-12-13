@@ -32,7 +32,7 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
     private CameraSource cameraSource = null;
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
-
+    private TextRecognitionProcessor processor;
     private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks;
 
     public RelativeLayout focusLayout;
@@ -128,8 +128,8 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
             cameraSource = new CameraSource(TextdetectWidgetPlugin.mActivity, graphicOverlay);
             cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
         }
-
-        cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(companies,this));
+        processor = new TextRecognitionProcessor(companies,this);
+        cameraSource.setMachineLearningFrameProcessor(processor);
     }
 
     private void startCameraSource() {
@@ -153,6 +153,12 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
     @Override
     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
         switch (methodCall.method) {
+            case "resumeDetection":
+                processor.setPaused(false);
+                break;
+            case "stopDetection":
+                processor.setPaused(true);
+                break;
             case "hideFocus":
                 hidePlusImage();
                 break;

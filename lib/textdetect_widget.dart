@@ -25,6 +25,14 @@ class TextdetectController {
 
   final MethodChannel _channel;
 
+  stopDetection() {
+    _channel.invokeMethod("stopDetection");
+  }
+
+  resumeDetection() {
+    _channel.invokeMethod("resumeDetection");
+  }
+
   setHandler(Future<dynamic> handler(MethodCall call)) {
     _channel.setMethodCallHandler(handler);
   }

@@ -77,6 +77,7 @@ public class TextRecognitionProcessor {
 	private final FirebaseVisionTextRecognizer detector;
 
 	private boolean isFocused = false;
+	private boolean isPaused = false;
 	private int focusedId = 0;
 
 	// Whether we should ignore process(). This is usually caused by feeding input data faster than
@@ -98,7 +99,10 @@ public class TextRecognitionProcessor {
 		}
 	}
 
+	public void setPaused(boolean paused) {
 
+		isPaused = paused;
+	}
 	public void process(ByteBuffer data, FrameMetadata frameMetadata, GraphicOverlay graphicOverlay) throws FirebaseMLException {
 
 		if (shouldThrottle.get()) {
@@ -111,8 +115,10 @@ public class TextRecognitionProcessor {
 						.setHeight(frameMetadata.getHeight())
 						.setRotation(frameMetadata.getRotation())
 						.build();
+		if (!isPaused) {
+			detectInVisionImage(FirebaseVisionImage.fromByteBuffer(data, metadata), frameMetadata, graphicOverlay);
+		}
 
-		detectInVisionImage(FirebaseVisionImage.fromByteBuffer(data, metadata), frameMetadata, graphicOverlay);
 	}
 
 	//endregion
@@ -419,6 +425,7 @@ public class TextRecognitionProcessor {
 							@Override
 							public void onFailure(@NonNull Exception e) {
 								shouldThrottle.set(false);
+								isFocused = false;
 								TextRecognitionProcessor.this.onFailure(e);
 							}
 						});

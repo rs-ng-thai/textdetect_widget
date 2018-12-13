@@ -51,6 +51,8 @@
         NSString* channelName = [NSString stringWithFormat:@"textdetect_widget_%lld", viewId];
         _channel = [FlutterMethodChannel methodChannelWithName:channelName binaryMessenger:messenger];
         __weak __typeof__(self) weakSelf = self;
+        
+       
         [_channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
             [weakSelf onMethodCall:call result:result];
         }];
@@ -114,6 +116,10 @@
         
     } else if ([[call method] isEqualToString:@"hideFocus"]) {
         NSLog(@"%@","Success");
+    } else if ([[call method] isEqualToString:@"stopDetection"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"stopDetection" object:nil];
+    } else if ([[call method] isEqualToString:@"resumeDetection"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"startDetection" object:nil];
     } else {
         result(FlutterMethodNotImplemented);
     }
