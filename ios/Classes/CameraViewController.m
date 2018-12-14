@@ -21,6 +21,7 @@ static const CGFloat FIRconstantScale = 1.0;
 @interface CameraViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     SystemSoundID mySound;
+    CIContext *context;
 }
 @property (nonatomic) BOOL isPaused;
 @property (nonatomic) BOOL isFocused;
@@ -274,10 +275,9 @@ static const CGFloat FIRconstantScale = 1.0;
                 } else {
                     if (self.isFocused) {
                         if (self.focusedId == i) {
-                            [self.delegate companyMovedOut:label.text];
-                            self.isFocused = NO;
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 [self->_plusImageView setHidden:NO];
+                                self.isFocused = NO;
                             });
                         }
                     }
@@ -288,12 +288,14 @@ static const CGFloat FIRconstantScale = 1.0;
 }
 
 - (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height {
+    
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
+        [self removeDetectionAnnotations];
+        [self updatePreviewOverlayView];
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
-            [self removeDetectionAnnotations];
-            [self updatePreviewOverlayView];
             if (text == nil) {
                 NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
                 self.isFocused = false;
@@ -414,7 +416,9 @@ static const CGFloat FIRconstantScale = 1.0;
         return;
     }
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
-    CIContext *context = [[CIContext alloc] initWithOptions:nil];
+    if (context == nil) {
+        context = [[CIContext alloc] initWithOptions:nil];
+    }
     CGImageRef cgImage = [context createCGImage:ciImage fromRect:ciImage.extent];
     if (cgImage == nil) {
         return;
@@ -444,6 +448,7 @@ static const CGFloat FIRconstantScale = 1.0;
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+    
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     if (imageBuffer) {
         _lastFrame = sampleBuffer;
@@ -456,6 +461,7 @@ static const CGFloat FIRconstantScale = 1.0;
         CGFloat imageWidth = CVPixelBufferGetWidth(imageBuffer);
         CGFloat imageHeight = CVPixelBufferGetHeight(imageBuffer);
         if (!_isPaused) {
+            
             [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight];
         }
     } else {

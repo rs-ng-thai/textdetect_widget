@@ -120,6 +120,8 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:@"stopDetection" object:nil];
     } else if ([[call method] isEqualToString:@"resumeDetection"]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"startDetection" object:nil];
+    } else if ([[call method] isEqualToString:@"dispose"]) {
+        
     } else {
         result(FlutterMethodNotImplemented);
     }

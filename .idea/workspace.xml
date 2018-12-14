@@ -17,11 +17,10 @@
   <component name="ChangeListManager">
     <list default="true" id="cb73775c-c61c-4070-aad2-614964d84250" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/FlutterCameraView.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/FlutterCameraView.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Classes/FlutterCameraView.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/FlutterCameraView.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/textdetect_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/textdetect_widget.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/textdetect_widget.iml" beforeDir="false" afterPath="$PROJECT_DIR$/textdetect_widget.iml" afterDir="false" />
     </list>
@@ -53,7 +52,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.dart" pinned="false" current-in-tab="true">
+      <file leaf-file-name="main.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="253">
@@ -75,8 +74,8 @@
       <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pubspec.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="27" column="28" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="28" />
+            <state relative-caret-position="-334">
+              <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -99,11 +98,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CameraViewController.m" pinned="false" current-in-tab="false">
+      <file leaf-file-name="CameraViewController.m" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="385">
-              <caret line="329" column="34" selection-start-line="329" selection-start-column="34" selection-end-line="329" selection-end-column="34" />
+            <state relative-caret-position="430">
+              <caret line="333" column="34" selection-start-line="333" selection-start-column="34" selection-end-line="333" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -121,7 +120,7 @@
         <entry file="file://$PROJECT_DIR$/ios/Classes/FlutterCameraView.m">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1770">
-              <caret line="124" column="5" selection-start-line="124" selection-start-column="5" selection-end-line="124" selection-end-column="5" />
+              <caret line="126" column="5" selection-start-line="126" selection-start-column="5" selection-end-line="126" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -172,8 +171,8 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/ios/Classes/FlutterCameraView.m" />
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
-        <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/textdetect_widget.dart" />
+        <option value="$PROJECT_DIR$/pubspec.yaml" />
       </list>
     </option>
   </component>
@@ -244,12 +243,6 @@
               <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
               <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
               <item name="ios" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
-              <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
-              <item name="ios" type="462c0819:PsiDirectoryNode" />
-              <item name="Assets" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
@@ -693,7 +686,7 @@
     <entry file="file://$PROJECT_DIR$/ios/Classes/FlutterCameraView.m">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1770">
-          <caret line="124" column="5" selection-start-line="124" selection-start-column="5" selection-end-line="124" selection-end-column="5" />
+          <caret line="126" column="5" selection-start-line="126" selection-start-column="5" selection-end-line="126" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -709,17 +702,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+    <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="27" column="28" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="385">
-          <caret line="329" column="34" selection-start-line="329" selection-start-column="34" selection-end-line="329" selection-end-column="34" />
+        <state relative-caret-position="253">
+          <caret line="363" column="35" selection-start-line="363" selection-start-column="35" selection-end-line="363" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -733,13 +722,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
+    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="253">
-          <caret line="363" column="35" selection-start-line="363" selection-start-column="35" selection-end-line="363" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#40#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-334">
+          <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="430">
+          <caret line="333" column="34" selection-start-line="333" selection-start-column="34" selection-end-line="333" selection-end-column="34" />
         </state>
       </provider>
     </entry>
