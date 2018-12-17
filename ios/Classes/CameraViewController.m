@@ -26,6 +26,7 @@ static const CGFloat FIRconstantScale = 1.0;
 @property (nonatomic) BOOL isPaused;
 @property (nonatomic) BOOL isFocused;
 @property (nonatomic) int focusedId;
+@property (nonatomic) NSString* lastCompany;
 @property (nonatomic) bool isUsingFrontCamera;
 @property (nonatomic, nonnull) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic) AVCaptureSession *captureSession;
@@ -211,16 +212,16 @@ static const CGFloat FIRconstantScale = 1.0;
 - (void)handleDetection:(FIRVisionText*)result width:(CGFloat)width height:(CGFloat)height{
     for (int i=0; i< self.companies.count; i ++) {
         NSString* company = self.companies.allKeys[i];
-        if (![result.text containsString:company]) {
+        if (![result.text.uppercaseString containsString:company.uppercaseString]) {
             continue;
         }
         for (FIRVisionTextBlock* block in result.blocks) {
-            if (![block.text containsString:company]) {
+            if (![block.text.uppercaseString containsString:company.uppercaseString]) {
                 continue;
             }
             
             for (FIRVisionTextLine *line in block.lines) {
-                if (![line.text containsString:company]) {
+                if (![line.text.uppercaseString containsString:company.uppercaseString]) {
                     continue;
                 }
                 
@@ -256,20 +257,24 @@ static const CGFloat FIRconstantScale = 1.0;
                     [self removeDetectionAnnotations];
                     [self.annotationOverlayView addSubview:label];
                     if (!self.isFocused) {
-                        NSLog(@"%@",@"Focused");
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.plusImageView setHidden:YES];
-                            [UIView animateWithDuration:0.5 animations:^{
-                                self->_focusView.transform = CGAffineTransformMakeScale(1.1, 1.1);
-                            } completion:^(BOOL finished) {
-                                self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
-                            }];
-                            NSString* soundPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/detect_sound.mp3" ofType:nil]; AudioServicesCreateSystemSoundID((__bridge CFURLRef _Nonnull)([[NSURL alloc] initWithString:soundPath]), &self->mySound);
-                            AudioServicesPlaySystemSound(self->mySound);
-                            [self.delegate companyDetected:label.text];
-                            self.isFocused = YES;
-                            self.focusedId = i;
-                        });
+                        if (![self.lastCompany isEqualToString:company]) {
+                            NSLog(@"%@",@"Focused");
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.plusImageView setHidden:YES];
+                                [UIView animateWithDuration:0.5 animations:^{
+                                    self->_focusView.transform = CGAffineTransformMakeScale(1.1, 1.1);
+                                } completion:^(BOOL finished) {
+                                    self->_focusView.transform = CGAffineTransformMakeScale(1.0, 1.0);
+                                }];
+                                NSString* soundPath = [[NSBundle mainBundle] pathForResource:@"flutter_assets/packages/textdetect_widget/asset/detect_sound.mp3" ofType:nil]; AudioServicesCreateSystemSoundID((__bridge CFURLRef _Nonnull)([[NSURL alloc] initWithString:soundPath]), &self->mySound);
+                                AudioServicesPlaySystemSound(self->mySound);
+                                [self.delegate companyDetected:label.text];
+                                self.isFocused = YES;
+                                self.focusedId = i;
+                                self.lastCompany = company;
+                            });
+                        }
+                        
                     }
                     return;
                 } else {
@@ -410,36 +415,39 @@ static const CGFloat FIRconstantScale = 1.0;
     }
 }
 
+- (void)updatePreviewOverlayViewTest {
+    
+}
+
 - (void)updatePreviewOverlayView {
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(_lastFrame);
     if (imageBuffer == nil) {
         return;
     }
     dispatch_async(dispatch_get_main_queue(), ^{
-        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
-        if (context == nil) {
-            context = [[CIContext alloc] initWithOptions:nil];
+        
+        CIImage *ciImage = [CIImage imageWithCVImageBuffer:imageBuffer];
+        if (self->context == nil) {
+            self->context = [[CIContext alloc] initWithOptions:nil];
         }
-        CGImageRef cgImage = [context createCGImage:ciImage fromRect:ciImage.extent];
+        CGImageRef cgImage = [self->context createCGImage:ciImage fromRect:ciImage.extent];
         if (cgImage == nil) {
             return;
         }
         UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:FIRconstantScale orientation:UIImageOrientationRight];
-        if (_isUsingFrontCamera) {
+        if (self.isUsingFrontCamera) {
             CGImageRef rotatedCGImage = rotatedImage.CGImage;
             if (rotatedCGImage == nil) {
                 return;
             }
             UIImage *mirroredImage = [UIImage imageWithCGImage:rotatedCGImage scale:FIRconstantScale orientation:UIImageOrientationLeftMirrored];
-            _previewOverlayView.image = mirroredImage;
+            self.previewOverlayView.image = mirroredImage;
         } else {
-            _previewOverlayView.image = rotatedImage;
+            self.previewOverlayView.image = rotatedImage;
         }
-        CGImageRelease( cgImage );
+        CGImageRelease(cgImage);
     });
-    
-    
-    
+
 }
 
 - (void)didReceiveMemoryWarning {

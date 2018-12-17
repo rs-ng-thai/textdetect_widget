@@ -79,7 +79,7 @@ public class TextRecognitionProcessor {
 	private boolean isFocused = false;
 	private boolean isPaused = false;
 	private int focusedId = 0;
-
+	private String lastCompany = "";
 	// Whether we should ignore process(). This is usually caused by feeding input data faster than
 	// the model can handle.
 	private final AtomicBoolean shouldThrottle = new AtomicBoolean(false);
@@ -133,19 +133,19 @@ public class TextRecognitionProcessor {
 		graphicOverlay.clear();
 		for (int i =0;i<companies.keySet().size();i++) {
 			String company = (String) companies.keySet().toArray()[i];
-			if (!results.getText().contains(company)) {
+			if (!results.getText().toUpperCase().contains(company.toUpperCase())) {
 				continue;
 			}
 			List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
 			for (int j = 0;j < blocks.size(); j++) {
 				FirebaseVisionText.TextBlock block = blocks.get(j);
-				if (!block.getText().contains(company)) {
+				if (!block.getText().toUpperCase().contains(company.toUpperCase())) {
 					continue;
 				}
 				List<FirebaseVisionText.Line> lines = block.getLines();
 				for (int p = 0; p < lines.size(); p++) {
 					FirebaseVisionText.Line line = lines.get(p);
-					if (!line.getText().contains(company)) {
+					if (!line.getText().toUpperCase().contains(company.toUpperCase())) {
 						continue;
 					}
 					int min = line.getBoundingBox().left;
@@ -200,39 +200,43 @@ public class TextRecognitionProcessor {
 //
 					if (newRect.left + 80 > focusRect.left && newRect.right + 80 < focusRect.right) {
 						if (newRect.top + 30 > focusRect.top && newRect.bottom + 30 < focusRect.bottom) {
-							graphicOverlay.clear();
-							graphicOverlay.add(textGraphic);
-							//Blink animation
-							if (!isFocused) {
-								Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
-								flutterView.focusLayout.startAnimation(animation);
-								Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
-								flutterView.focusLayout.startAnimation(animation1);
-								isFocused = true;
-								focusedId = i;
-								Handler mainHandler = new Handler(Looper.getMainLooper());
-								Runnable myRunnable = new Runnable() {
-									@Override
-									public void run() {
-										flutterView.hidePlusImage();
-									} // This is your code
-								};
-								mainHandler.post(myRunnable);
-								MediaPlayer mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
-								try {
-									if (mp.isPlaying()) {
-										mp.stop();
-										mp.release();
+							if (!lastCompany.equals(company)) {
+								graphicOverlay.clear();
+								graphicOverlay.add(textGraphic);
+								//Blink animation
+								if (!isFocused) {
+									Animation animation = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink);
+									flutterView.focusLayout.startAnimation(animation);
+									Animation animation1 = AnimationUtils.loadAnimation(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.anim.blink_resume);
+									flutterView.focusLayout.startAnimation(animation1);
+									isFocused = true;
+									focusedId = i;
+									Handler mainHandler = new Handler(Looper.getMainLooper());
+									Runnable myRunnable = new Runnable() {
+										@Override
+										public void run() {
+											flutterView.hidePlusImage();
+										} // This is your code
+									};
+									mainHandler.post(myRunnable);
+									MediaPlayer mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+									try {
+										if (mp.isPlaying()) {
+											mp.stop();
+											mp.release();
 
-										mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+											mp = MediaPlayer.create(TextdetectWidgetPlugin.mActivity.getApplicationContext(), R.raw.detect_sound);
+										}
+										mp.start();
+									} catch (Exception e) {
+										e.printStackTrace();
 									}
-									mp.start();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-								flutterView.methodChannel.invokeMethod("detect",nickname);
+									lastCompany = company;
+									flutterView.methodChannel.invokeMethod("detect",nickname);
 
+								}
 							}
+
 							return;
 						}
 					}
