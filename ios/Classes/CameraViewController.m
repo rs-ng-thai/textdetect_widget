@@ -291,11 +291,10 @@ static const CGFloat FIRconstantScale = 1.0;
     
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
-        [self removeDetectionAnnotations];
-        [self updatePreviewOverlayView];
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
+            [self removeDetectionAnnotations];
+            [self updatePreviewOverlayView];
             if (text == nil) {
                 NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
                 self.isFocused = false;
@@ -318,9 +317,11 @@ static const CGFloat FIRconstantScale = 1.0;
         self->_captureSession.sessionPreset = AVCaptureSessionPresetMedium;
         
         AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
-        output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA]};
+        output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
         dispatch_queue_t outputQueue = dispatch_queue_create(videoDataOutputQueueLabel.UTF8String, nil);
+        output.alwaysDiscardsLateVideoFrames = YES;
         [output setSampleBufferDelegate:self queue:outputQueue];
+        
         if ([self.captureSession canAddOutput:output]) {
             [self.captureSession addOutput:output];
             [self.captureSession commitConfiguration];
@@ -375,11 +376,10 @@ static const CGFloat FIRconstantScale = 1.0;
     [_cameraView addSubview:_previewOverlayView];
     
     [NSLayoutConstraint activateConstraints:@[
-                                              [_previewOverlayView.topAnchor constraintGreaterThanOrEqualToAnchor:_cameraView.topAnchor],
-                                              [_previewOverlayView.centerYAnchor constraintEqualToAnchor:_cameraView.centerYAnchor],
-                                              [_previewOverlayView.leadingAnchor constraintEqualToAnchor:_cameraView.leadingAnchor],
+                                              [_previewOverlayView.topAnchor constraintEqualToAnchor:_cameraView.topAnchor],
+                                               [_previewOverlayView.leadingAnchor constraintEqualToAnchor:_cameraView.leadingAnchor],
                                               [_previewOverlayView.trailingAnchor constraintEqualToAnchor:_cameraView.trailingAnchor],
-                                              [_previewOverlayView.bottomAnchor constraintLessThanOrEqualToAnchor:_cameraView.bottomAnchor]
+                                              [_previewOverlayView.bottomAnchor constraintEqualToAnchor:_cameraView.bottomAnchor]
                                               ]];
 }
 - (void)setUpAnnotationOverlayView {
@@ -415,32 +415,33 @@ static const CGFloat FIRconstantScale = 1.0;
     if (imageBuffer == nil) {
         return;
     }
-    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
-    if (context == nil) {
-        context = [[CIContext alloc] initWithOptions:nil];
-    }
-    CGImageRef cgImage = [context createCGImage:ciImage fromRect:ciImage.extent];
-    if (cgImage == nil) {
-        return;
-    }
-    UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:FIRconstantScale orientation:UIImageOrientationRight];
-    if (_isUsingFrontCamera) {
-        CGImageRef rotatedCGImage = rotatedImage.CGImage;
-        if (rotatedCGImage == nil) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
+        if (context == nil) {
+            context = [[CIContext alloc] initWithOptions:nil];
+        }
+        CGImageRef cgImage = [context createCGImage:ciImage fromRect:ciImage.extent];
+        if (cgImage == nil) {
             return;
         }
-        UIImage *mirroredImage = [UIImage imageWithCGImage:rotatedCGImage scale:FIRconstantScale orientation:UIImageOrientationLeftMirrored];
-        _previewOverlayView.image = mirroredImage;
-    } else {
-        _previewOverlayView.image = rotatedImage;
-    }
-    CGImageRelease( cgImage );
+        UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:FIRconstantScale orientation:UIImageOrientationRight];
+        if (_isUsingFrontCamera) {
+            CGImageRef rotatedCGImage = rotatedImage.CGImage;
+            if (rotatedCGImage == nil) {
+                return;
+            }
+            UIImage *mirroredImage = [UIImage imageWithCGImage:rotatedCGImage scale:FIRconstantScale orientation:UIImageOrientationLeftMirrored];
+            _previewOverlayView.image = mirroredImage;
+        } else {
+            _previewOverlayView.image = rotatedImage;
+        }
+        CGImageRelease( cgImage );
+    });
+    
+    
     
 }
 
-- (void)dealloc {
-    
-}
 - (void)didReceiveMemoryWarning {
     NSLog(@"%@",@"Did Receive Memory warning");
 }
@@ -468,6 +469,4 @@ static const CGFloat FIRconstantScale = 1.0;
         NSLog(@"%@", @"Failed to get image buffer from sample buffer.");
     }
 }
-
-
 @end
