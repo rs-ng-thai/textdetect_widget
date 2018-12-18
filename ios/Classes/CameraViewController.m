@@ -7,6 +7,7 @@
 @import CoreVideo;
 #import <Firebase/Firebase.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import "sys/utsname.h"
 
 static NSString *const alertControllerTitle = @"Vision Detectors";
 static NSString *const alertControllerMessage = @"Select a detector";
@@ -37,7 +38,7 @@ static const CGFloat FIRconstantScale = 1.0;
 @property (nonatomic) UIView *cameraView;
 @property (nonatomic) UIImageView *plusImageView;
 @property (nonatomic) UIView *focusView;
-@property (nonatomic) CMSampleBufferRef lastFrame;
+
 @end
 
 @implementation CameraViewController
@@ -292,14 +293,15 @@ static const CGFloat FIRconstantScale = 1.0;
     }
 }
 
-- (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height {
+- (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height buffer:(CMSampleBufferRef)buffer{
     
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
+    [self updatePreviewOverlayView:buffer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
             [self removeDetectionAnnotations];
-            [self updatePreviewOverlayView];
+            
             if (text == nil) {
                 NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
                 self.isFocused = false;
@@ -322,7 +324,7 @@ static const CGFloat FIRconstantScale = 1.0;
         self->_captureSession.sessionPreset = AVCaptureSessionPresetMedium;
         
         AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
-        output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
+        output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [self getPixelType]};
         dispatch_queue_t outputQueue = dispatch_queue_create(videoDataOutputQueueLabel.UTF8String, nil);
         output.alwaysDiscardsLateVideoFrames = YES;
         [output setSampleBufferDelegate:self queue:outputQueue];
@@ -334,6 +336,20 @@ static const CGFloat FIRconstantScale = 1.0;
             NSLog(@"%@", @"Failed to add capture session output.");
         }
     });
+}
+
+- (NSNumber*)getPixelType {
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    
+    NSString* deviceName = [NSString stringWithCString:systemInfo.machine
+                              encoding:NSUTF8StringEncoding];
+    if ([deviceName isEqualToString:@"iPhone10,1"] || [deviceName isEqualToString:@"iPhone10,4"]) {
+        return [NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange];
+    }
+    
+    return [NSNumber numberWithInteger:kCMPixelFormat_32BGRA];
+    
 }
 
 - (void)setUpCaptureSessionInput {
@@ -381,10 +397,11 @@ static const CGFloat FIRconstantScale = 1.0;
     [_cameraView addSubview:_previewOverlayView];
     
     [NSLayoutConstraint activateConstraints:@[
-                                              [_previewOverlayView.topAnchor constraintEqualToAnchor:_cameraView.topAnchor],
-                                               [_previewOverlayView.leadingAnchor constraintEqualToAnchor:_cameraView.leadingAnchor],
-                                              [_previewOverlayView.trailingAnchor constraintEqualToAnchor:_cameraView.trailingAnchor],
-                                              [_previewOverlayView.bottomAnchor constraintEqualToAnchor:_cameraView.bottomAnchor]
+                                              [_previewOverlayView.topAnchor constraintGreaterThanOrEqualToAnchor:_cameraView.topAnchor],
+                                              [_previewOverlayView.centerYAnchor constraintEqualToAnchor:_cameraView.centerYAnchor],
+                                              [_previewOverlayView.leadingAnchor constraintEqualToAnchor:_cameraView.leadingAnchor],
+                                              [_previewOverlayView.trailingAnchor constraintLessThanOrEqualToAnchor:_cameraView.trailingAnchor],
+                                              [_previewOverlayView.bottomAnchor constraintLessThanOrEqualToAnchor:_cameraView.bottomAnchor]
                                               ]];
 }
 - (void)setUpAnnotationOverlayView {
@@ -415,18 +432,15 @@ static const CGFloat FIRconstantScale = 1.0;
     }
 }
 
-- (void)updatePreviewOverlayViewTest {
-    
-}
-
-- (void)updatePreviewOverlayView {
-    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(_lastFrame);
+- (void)updatePreviewOverlayView:(CMSampleBufferRef)buffer {
+    CFRetain(buffer);
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(buffer);
     if (imageBuffer == nil) {
         return;
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        CIImage *ciImage = [CIImage imageWithCVImageBuffer:imageBuffer];
+        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
         if (self->context == nil) {
             self->context = [[CIContext alloc] initWithOptions:nil];
         }
@@ -446,6 +460,7 @@ static const CGFloat FIRconstantScale = 1.0;
             self.previewOverlayView.image = rotatedImage;
         }
         CGImageRelease(cgImage);
+        CFRelease(buffer);
     });
 
 }
@@ -460,7 +475,7 @@ static const CGFloat FIRconstantScale = 1.0;
     
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     if (imageBuffer) {
-        _lastFrame = sampleBuffer;
+        
         FIRVisionImage *visionImage = [[FIRVisionImage alloc] initWithBuffer:sampleBuffer];
         FIRVisionImageMetadata *metadata = [[FIRVisionImageMetadata alloc] init];
         UIImageOrientation orientation = [UIUtilities imageOrientationFromDevicePosition:_isUsingFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack];
@@ -471,7 +486,7 @@ static const CGFloat FIRconstantScale = 1.0;
         CGFloat imageHeight = CVPixelBufferGetHeight(imageBuffer);
         if (!_isPaused) {
             
-            [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight];
+            [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight buffer:sampleBuffer];
         }
     } else {
         NSLog(@"%@", @"Failed to get image buffer from sample buffer.");
