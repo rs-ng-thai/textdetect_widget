@@ -16,13 +16,12 @@ static NSString *const videoDataOutputQueueLabel = @"com.google.firebaseml.visio
 static NSString *const sessionQueueLabel = @"com.google.firebaseml.visiondetector.SessionQueue";
 static NSString *const noResultsMessage = @"No Results";
 static const CGFloat FIRSmallDotRadius = 4.0;
-static const CGFloat FIRconstantScale = 1.0;
-
 
 @interface CameraViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     SystemSoundID mySound;
     CIContext *context;
+    CGFloat imageScale;
 }
 @property (nonatomic) BOOL isPaused;
 @property (nonatomic) BOOL isFocused;
@@ -47,6 +46,7 @@ static const CGFloat FIRconstantScale = 1.0;
     [super viewDidLoad];
     _focusedId = 0;
     _isPaused = NO;
+    imageScale = 1;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didStartDetection:) name:@"startDetection" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didStopDetection:) name:@"stopDetection" object:nil];
      _cameraView = [[UIView alloc] init];
@@ -93,6 +93,7 @@ static const CGFloat FIRconstantScale = 1.0;
 
     _focusView = [[UIView alloc] init];
     [self.view addSubview:_focusView];
+    [self.previewOverlayView setContentMode:UIViewContentModeScaleAspectFill];
     [_focusView setTranslatesAutoresizingMaskIntoConstraints:NO];
     NSLayoutConstraint *_centerConstraint = [NSLayoutConstraint
                                           constraintWithItem:_focusView
@@ -241,8 +242,16 @@ static const CGFloat FIRconstantScale = 1.0;
                         }
                     }
                 }
+                CGRect lineFrame = line.frame;
                 CGRect normalizedRect = CGRectMake(line.frame.origin.x / width,  min/ height,  line.frame.size.width / width,  (max - min)/ height);
-                CGRect convertedRect = [self->_previewLayer rectForMetadataOutputRectOfInterest:normalizedRect];
+                
+                CGFloat originY = width / imageScale * normalizedRect.origin.x + (self.view.bounds.size.height - width / imageScale) / 2;
+                CGFloat originX = height / imageScale * normalizedRect.origin.y + (self.view.bounds.size.width - height / imageScale) / 2;
+                
+                CGFloat cWidth = height / imageScale * normalizedRect.size.height;
+                CGFloat cHeight = width / imageScale * normalizedRect.size.width;
+
+                CGRect convertedRect = CGRectMake(originX, originY, cWidth, cHeight);
                 CGRect newRect = CGRectMake(convertedRect.origin.x + convertedRect.size.width / 2 - 40, convertedRect.origin.y, 80, convertedRect.size.height);
                 
                 UILabel *label = [[UILabel alloc] initWithFrame:newRect];
@@ -296,7 +305,9 @@ static const CGFloat FIRconstantScale = 1.0;
 - (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height buffer:(CMSampleBufferRef)buffer{
     
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
-    [self updatePreviewOverlayView:buffer];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updatePreviewOverlayView:buffer];
+    });
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
@@ -326,7 +337,7 @@ static const CGFloat FIRconstantScale = 1.0;
         AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
         output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [self getPixelType]};
         dispatch_queue_t outputQueue = dispatch_queue_create(videoDataOutputQueueLabel.UTF8String, nil);
-        output.alwaysDiscardsLateVideoFrames = YES;
+        output.alwaysDiscardsLateVideoFrames = NO;
         [output setSampleBufferDelegate:self queue:outputQueue];
         
         if ([self.captureSession canAddOutput:output]) {
@@ -393,15 +404,17 @@ static const CGFloat FIRconstantScale = 1.0;
     });
 }
 
+- (CGFloat)getImageScaleWithWidth:(CGFloat)width height:(CGFloat)height {
+    CGFloat xScale = width / self.view.bounds.size.width;
+    CGFloat yScale = height / self.view.bounds.size.height;
+    return MIN(xScale, yScale);
+    
+}
 - (void)setUpPreviewOverlayView {
     [_cameraView addSubview:_previewOverlayView];
-    
     [NSLayoutConstraint activateConstraints:@[
-                                              [_previewOverlayView.topAnchor constraintGreaterThanOrEqualToAnchor:_cameraView.topAnchor],
-                                              [_previewOverlayView.centerYAnchor constraintEqualToAnchor:_cameraView.centerYAnchor],
-                                              [_previewOverlayView.leadingAnchor constraintEqualToAnchor:_cameraView.leadingAnchor],
-                                              [_previewOverlayView.trailingAnchor constraintLessThanOrEqualToAnchor:_cameraView.trailingAnchor],
-                                              [_previewOverlayView.bottomAnchor constraintLessThanOrEqualToAnchor:_cameraView.bottomAnchor]
+                                              [_previewOverlayView.centerXAnchor constraintEqualToAnchor:_cameraView.centerXAnchor],
+                                              [_previewOverlayView.centerYAnchor constraintEqualToAnchor:_cameraView.centerYAnchor]
                                               ]];
 }
 - (void)setUpAnnotationOverlayView {
@@ -448,17 +461,8 @@ static const CGFloat FIRconstantScale = 1.0;
         if (cgImage == nil) {
             return;
         }
-        UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:FIRconstantScale orientation:UIImageOrientationRight];
-        if (self.isUsingFrontCamera) {
-            CGImageRef rotatedCGImage = rotatedImage.CGImage;
-            if (rotatedCGImage == nil) {
-                return;
-            }
-            UIImage *mirroredImage = [UIImage imageWithCGImage:rotatedCGImage scale:FIRconstantScale orientation:UIImageOrientationLeftMirrored];
-            self.previewOverlayView.image = mirroredImage;
-        } else {
-            self.previewOverlayView.image = rotatedImage;
-        }
+        UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:self->imageScale orientation:UIImageOrientationRight];
+        self.previewOverlayView.image = rotatedImage;
         CGImageRelease(cgImage);
         CFRelease(buffer);
     });
@@ -475,7 +479,6 @@ static const CGFloat FIRconstantScale = 1.0;
     
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     if (imageBuffer) {
-        
         FIRVisionImage *visionImage = [[FIRVisionImage alloc] initWithBuffer:sampleBuffer];
         FIRVisionImageMetadata *metadata = [[FIRVisionImageMetadata alloc] init];
         UIImageOrientation orientation = [UIUtilities imageOrientationFromDevicePosition:_isUsingFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack];
@@ -484,10 +487,15 @@ static const CGFloat FIRconstantScale = 1.0;
         visionImage.metadata = metadata;
         CGFloat imageWidth = CVPixelBufferGetWidth(imageBuffer);
         CGFloat imageHeight = CVPixelBufferGetHeight(imageBuffer);
-        if (!_isPaused) {
-            
-            [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight buffer:sampleBuffer];
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self->imageScale = [self getImageScaleWithWidth:imageHeight height:imageWidth];
+            if (!self->_isPaused) {
+                [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight buffer:sampleBuffer];
+            } else {
+                [self updatePreviewOverlayView:sampleBuffer];
+            }
+        });
+        
     } else {
         NSLog(@"%@", @"Failed to get image buffer from sample buffer.");
     }
