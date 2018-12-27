@@ -110,7 +110,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                                          toItem:self.view
                                          attribute:NSLayoutAttributeTop
                                          multiplier:1.0
-                                         constant:200];
+                                         constant:150];
     NSLayoutConstraint *_widthConstraint = [NSLayoutConstraint
                                             constraintWithItem:_focusView
                                             attribute:NSLayoutAttributeWidth
@@ -229,7 +229,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                 
                 CGFloat min = 0,max = 0;
                 for (FIRVisionTextElement *element in line.elements) {
-                    if ([company containsString:element.text]) {
+                    if ([company.uppercaseString containsString:element.text.uppercaseString]) {
                         if (min == 0) {
                             min = element.frame.origin.y;
                             max = element.frame.origin.y + element.frame.size.height;
@@ -242,7 +242,6 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                         }
                     }
                 }
-                CGRect lineFrame = line.frame;
                 CGRect normalizedRect = CGRectMake(line.frame.origin.x / width,  min/ height,  line.frame.size.width / width,  (max - min)/ height);
                 
                 CGFloat originY = width / imageScale * normalizedRect.origin.x + (self.view.bounds.size.height - width / imageScale) / 2;
@@ -261,8 +260,8 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                 [self.annotationOverlayView addSubview:label];
                 CGFloat left = (self.view.bounds.size.width - 300) / 2;
                 CGFloat right = (self.view.bounds.size.width - 300) / 2 + 300;
-                CGFloat top = 200;
-                CGFloat bottom = 260;
+                CGFloat top = 150;
+                CGFloat bottom = 210;
                 if (label.frame.origin.x  > left && label.frame.origin.x + label.frame.size.width < right && label.frame.origin.y > top && label.frame.origin.y + label.frame.size.height < bottom) {
                     [self removeDetectionAnnotations];
                     [self.annotationOverlayView addSubview:label];
@@ -284,7 +283,6 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                                 self.lastCompany = company;
                             });
                         }
-                        
                     }
                     return;
                 } else {
@@ -307,12 +305,10 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updatePreviewOverlayView:buffer];
-    });
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
             [self removeDetectionAnnotations];
-            
             if (text == nil) {
                 NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
                 self.isFocused = false;
@@ -323,6 +319,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
         
         
     }];
+    });
 }
 
 #pragma mark - Private

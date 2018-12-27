@@ -1,9 +1,11 @@
 package com.shareclarity.textdetectwidget;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +37,7 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
     private TextRecognitionProcessor processor;
     private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks;
 
+    
     public RelativeLayout focusLayout;
     public ImageView plusImageView;
 
@@ -80,10 +83,12 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
                             cameraSource.release();
                         }
                     }
+
                 };
         TextdetectWidgetPlugin.mActivity
                 .getApplication()
                 .registerActivityLifecycleCallbacks(this.activityLifecycleCallbacks);
+
     }
 
 
@@ -166,6 +171,7 @@ public class FlutterCameraView implements PlatformView, MethodChannel.MethodCall
                 result.notImplemented();
         }
     }
+
 
     @Override
     public void dispose() {

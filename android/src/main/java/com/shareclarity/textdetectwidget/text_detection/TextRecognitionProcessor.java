@@ -184,9 +184,9 @@ public class TextRecognitionProcessor {
 					//Focus
 					RectF focusRect = new RectF();
 					focusRect.left = (pxToDp(size.x) - 300) / 2;
-					focusRect.top = 100;
+					focusRect.top = 150;
 					focusRect.right = focusRect.left + 300;
-					focusRect.bottom = 160;
+					focusRect.bottom = 210;
 
 					//Tag rect
 					RectF newRect = new RectF();
