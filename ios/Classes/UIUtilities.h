@@ -15,8 +15,8 @@
 //
 
 #import <Foundation/Foundation.h>
-@import AVFoundation;
-@import UIKit;
+#import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 #import <FirebaseMLVision/FirebaseMLVision.h>
 
 @interface UIUtilities : NSObject

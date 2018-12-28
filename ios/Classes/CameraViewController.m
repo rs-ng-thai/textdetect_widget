@@ -3,20 +3,15 @@
 #import "CameraViewController.h"
 #import "TextdetectWidgetPlugin.h"
 #import "UIUtilities.h"
-@import AVFoundation;
-@import CoreVideo;
+#import <AVFoundation/AVFoundation.h>
+#import <CoreVideo/CoreVideo.h>
 #import <Firebase/Firebase.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import "sys/utsname.h"
+#import "CVWrapper.h"
 
-static NSString *const alertControllerTitle = @"Vision Detectors";
-static NSString *const alertControllerMessage = @"Select a detector";
-static NSString *const cancelActionTitleText = @"Cancel";
 static NSString *const videoDataOutputQueueLabel = @"com.google.firebaseml.visiondetector.VideoDataOutputQueue";
 static NSString *const sessionQueueLabel = @"com.google.firebaseml.visiondetector.SessionQueue";
-static NSString *const noResultsMessage = @"No Results";
-static const CGFloat FIRSmallDotRadius = 4.0;
-
 @interface CameraViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     SystemSoundID mySound;
@@ -27,7 +22,6 @@ static const CGFloat FIRSmallDotRadius = 4.0;
 @property (nonatomic) BOOL isFocused;
 @property (nonatomic) int focusedId;
 @property (nonatomic) NSString* lastCompany;
-@property (nonatomic) bool isUsingFrontCamera;
 @property (nonatomic, nonnull) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic) AVCaptureSession *captureSession;
 @property (nonatomic) dispatch_queue_t sessionQueue;
@@ -46,6 +40,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     [super viewDidLoad];
     _focusedId = 0;
     _isPaused = NO;
+    
     imageScale = 1;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didStartDetection:) name:@"startDetection" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didStopDetection:) name:@"stopDetection" object:nil];
@@ -146,9 +141,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     _plusImageView.image = plusImage;
     [_focusView addSubview:focusImageView];
     [_focusView addSubview:_plusImageView];
-    _focusView.layer.zPosition = 100;
     
-    _isUsingFrontCamera = NO;
     _isFocused = NO;
     _captureSession = [[AVCaptureSession alloc] init];
     _sessionQueue = dispatch_queue_create(sessionQueueLabel.UTF8String, nil);
@@ -158,12 +151,51 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     _annotationOverlayView = [[UIView alloc] initWithFrame:CGRectZero];
     _annotationOverlayView.translatesAutoresizingMaskIntoConstraints = NO;
     
-    [self addBackButton];
-    self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
-    [self setUpPreviewOverlayView];
+//    [self setUpPreviewOverlayView];
+
+//    [self setUpCaptureSessionOutput];
+//    [self setUpCaptureSessionInput];
+//    [self startSession];
     [self setUpAnnotationOverlayView];
-    [self setUpCaptureSessionOutput];
-    [self setUpCaptureSessionInput];
+    [self cameraSetup];
+}
+
+- (void)cameraSetup {
+    _captureSession = [[AVCaptureSession alloc] init];
+    self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
+    self.previewLayer.frame = self.view.bounds;
+    self.previewLayer.zPosition = -1;
+    AVCaptureDevice* backDevice;
+    
+    NSArray* availableDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    for (int i = 0; i<availableDevices.count; i++) {
+        AVCaptureDevice* device = availableDevices[i];
+        if (device.position == AVCaptureDevicePositionBack) {
+            backDevice = device;
+            break;
+        }
+    }
+    
+    NSError* error;
+    AVCaptureDeviceInput* deviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:backDevice error:&error];
+    if (!error && deviceInput) {
+        if ([self.captureSession canAddInput:deviceInput]) {
+            [self.captureSession addInput:deviceInput];
+        }
+    }
+    self.previewLayer.session = self.captureSession;
+    [self.cameraView.layer addSublayer:self.previewLayer];
+    dispatch_queue_t outputQueue = dispatch_queue_create("Sample Buffer Delegate", nil);
+    AVCaptureVideoDataOutput* videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+    [videoOutput setSampleBufferDelegate:self queue:outputQueue];
+    videoOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:  [NSNumber numberWithInteger:kCMPixelFormat_32BGRA]};
+    self->_captureSession.sessionPreset = AVCaptureSessionPresetHigh;
+    if ([self.captureSession canAddOutput:videoOutput]) {
+        [self.captureSession addOutput:videoOutput];
+    }
+    
+    
+    [self.captureSession startRunning];
 }
 
 - (void)didStartDetection:(NSNotification*) notification {
@@ -188,30 +220,16 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     [self.navigationController dismissViewControllerAnimated:true completion:nil];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    [self startSession];
-}
-
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self stopSession];
 }
 
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    _previewLayer.frame = _cameraView.frame;
-}
-
-- (IBAction)switchCamera:(id)sender {
-    self.isUsingFrontCamera = !_isUsingFrontCamera;
-    [self removeDetectionAnnotations];
-    [self setUpCaptureSessionInput];
-}
-
 #pragma mark - On-Device Detection
 - (void)handleDetection:(FIRVisionText*)result width:(CGFloat)width height:(CGFloat)height{
+    BOOL isDetected = false;
+    [self->_plusImageView setHidden:NO];
     for (int i=0; i< self.companies.count; i ++) {
         NSString* company = self.companies.allKeys[i];
         if (![result.text.uppercaseString containsString:company.uppercaseString]) {
@@ -226,7 +244,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                 if (![line.text.uppercaseString containsString:company.uppercaseString]) {
                     continue;
                 }
-                
+                isDetected = YES;
                 CGFloat min = 0,max = 0;
                 for (FIRVisionTextElement *element in line.elements) {
                     if ([company.uppercaseString containsString:element.text.uppercaseString]) {
@@ -251,13 +269,21 @@ static const CGFloat FIRSmallDotRadius = 4.0;
                 CGFloat cHeight = width / imageScale * normalizedRect.size.width;
 
                 CGRect convertedRect = CGRectMake(originX, originY, cWidth, cHeight);
-                CGRect newRect = CGRectMake(convertedRect.origin.x + convertedRect.size.width / 2 - 40, convertedRect.origin.y, 80, convertedRect.size.height);
+                CGRect newRect = CGRectMake(convertedRect.origin.x + convertedRect.size.width / 2 - 40, convertedRect.origin.y, 80, 20);
                 
-                UILabel *label = [[UILabel alloc] initWithFrame:newRect];
-                label.textColor = UIColor.whiteColor;
-                label.text = self->_companies.allValues[i];
-                label.adjustsFontSizeToFitWidth = YES;
-                [self.annotationOverlayView addSubview:label];
+                UILabel *label;
+                if ([self.annotationOverlayView viewWithTag:i] != nil) {
+                    label = [self.annotationOverlayView viewWithTag:i];
+                    label.frame = newRect;
+                } else {
+                    label = [[UILabel alloc] initWithFrame:newRect];
+                    label.textColor = UIColor.whiteColor;
+                    label.text = self->_companies.allValues[i];
+                    label.adjustsFontSizeToFitWidth = YES;
+                    label.tag = i;
+                    [self.annotationOverlayView addSubview:label];
+                }
+                
                 CGFloat left = (self.view.bounds.size.width - 300) / 2;
                 CGFloat right = (self.view.bounds.size.width - 300) / 2 + 300;
                 CGFloat top = 150;
@@ -298,26 +324,27 @@ static const CGFloat FIRSmallDotRadius = 4.0;
             }
         }
     }
+    if (!isDetected) {
+        [self removeDetectionAnnotations];
+    }
 }
 
 - (void)recognizeTextOnDeviceInImage:(FIRVisionImage *)image width:(CGFloat) width height:(CGFloat)height buffer:(CMSampleBufferRef)buffer{
     
     FIRVisionTextRecognizer *textRecognizer = [_vision onDeviceTextRecognizer];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self updatePreviewOverlayView:buffer];
     [textRecognizer processImage:image completion:^(FIRVisionText * _Nullable text, NSError * _Nullable error) {
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             //Your main thread code goes in here
-            [self removeDetectionAnnotations];
-            if (text == nil) {
-                NSLog(@"On-Device text recognizer error: %@", error ? error.localizedDescription : noResultsMessage);
-                self.isFocused = false;
-                return;
-            }
-            [self handleDetection:text width:width height:height];
+//            [self removeDetectionAnnotations];
         });
-        
-        
+        if (text == nil) {
+            self.isFocused = false;
+            [self removeDetectionAnnotations];
+            return;
+        }
+        [self handleDetection:text width:width height:height];
     }];
     });
 }
@@ -329,12 +356,11 @@ static const CGFloat FIRSmallDotRadius = 4.0;
         [self->_captureSession beginConfiguration];
         // When performing latency tests to determine ideal capture settings,
         // run the app in 'release' mode to get accurate performance metrics
-        self->_captureSession.sessionPreset = AVCaptureSessionPresetMedium;
+//        self->_captureSession.sessionPreset = AVCaptureSessionPreset640x480;
         
         AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
         output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: [self getPixelType]};
         dispatch_queue_t outputQueue = dispatch_queue_create(videoDataOutputQueueLabel.UTF8String, nil);
-        output.alwaysDiscardsLateVideoFrames = NO;
         [output setSampleBufferDelegate:self queue:outputQueue];
         
         if ([self.captureSession canAddOutput:output]) {
@@ -362,7 +388,7 @@ static const CGFloat FIRSmallDotRadius = 4.0;
 
 - (void)setUpCaptureSessionInput {
     dispatch_async(_sessionQueue, ^{
-        AVCaptureDevicePosition cameraPosition = self.isUsingFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
+        AVCaptureDevicePosition cameraPosition = AVCaptureDevicePositionBack;
         AVCaptureDevice *device = [self captureDeviceForPosition:cameraPosition];
         if (device) {
             [self->_captureSession beginConfiguration];
@@ -442,29 +468,31 @@ static const CGFloat FIRSmallDotRadius = 4.0;
     }
 }
 
-- (void)updatePreviewOverlayView:(CMSampleBufferRef)buffer {
-    CFRetain(buffer);
-    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(buffer);
-    if (imageBuffer == nil) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
-        if (self->context == nil) {
-            self->context = [[CIContext alloc] initWithOptions:nil];
-        }
-        CGImageRef cgImage = [self->context createCGImage:ciImage fromRect:ciImage.extent];
-        if (cgImage == nil) {
-            return;
-        }
-        UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:self->imageScale orientation:UIImageOrientationRight];
-        self.previewOverlayView.image = rotatedImage;
-        CGImageRelease(cgImage);
-        CFRelease(buffer);
-    });
-
-}
+//- (void)updatePreviewOverlayView:(CMSampleBufferRef)buffer {
+//    UIImage* image = [CVWrapper imageFromSampleBuffer:buffer scale:self->imageScale];
+//    [self.previewOverlayView setImage:image];
+//    CFRetain(buffer);
+//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(buffer);
+//    if (imageBuffer == nil) {
+//        return;
+//    }
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//
+//        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
+//        if (self->context == nil) {
+//            self->context = [[CIContext alloc] initWithOptions:nil];
+//        }
+//        CGImageRef cgImage = [self->context createCGImage:ciImage fromRect:ciImage.extent];
+//        if (cgImage == nil) {
+//            return;
+//        }
+//        UIImage *rotatedImage = [UIImage imageWithCGImage:cgImage scale:self->imageScale orientation:UIImageOrientationRight];
+//        self.previewOverlayView.image = rotatedImage;
+//        CGImageRelease(cgImage);
+//        CFRelease(buffer);
+//    });
+//
+//}
 
 - (void)didReceiveMemoryWarning {
     NSLog(@"%@",@"Did Receive Memory warning");
@@ -473,12 +501,16 @@ static const CGFloat FIRSmallDotRadius = 4.0;
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        UIImage* image = [CVWrapper imageFromSampleBuffer:sampleBuffer scale:self->imageScale];
+//        [self.previewOverlayView setImage:image];
+//    });
     
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     if (imageBuffer) {
         FIRVisionImage *visionImage = [[FIRVisionImage alloc] initWithBuffer:sampleBuffer];
         FIRVisionImageMetadata *metadata = [[FIRVisionImageMetadata alloc] init];
-        UIImageOrientation orientation = [UIUtilities imageOrientationFromDevicePosition:_isUsingFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack];
+        UIImageOrientation orientation = [UIUtilities imageOrientationFromDevicePosition:AVCaptureDevicePositionBack];
         FIRVisionDetectorImageOrientation visionOrientation = [UIUtilities visionImageOrientationFromImageOrientation:orientation];
         metadata.orientation = visionOrientation;
         visionImage.metadata = metadata;
@@ -488,8 +520,6 @@ static const CGFloat FIRSmallDotRadius = 4.0;
             self->imageScale = [self getImageScaleWithWidth:imageHeight height:imageWidth];
             if (!self->_isPaused) {
                 [self recognizeTextOnDeviceInImage:visionImage width:imageWidth height:imageHeight buffer:sampleBuffer];
-            } else {
-                [self updatePreviewOverlayView:sampleBuffer];
             }
         });
         

@@ -17,14 +17,11 @@
   <component name="ChangeListManager">
     <list default="true" id="cb73775c-c61c-4070-aad2-614964d84250" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/FlutterCameraView.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/FlutterCameraView.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/shareclarity/textdetectwidget/text_detection/TextRecognitionProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/res/layout/activity_camera.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/res/layout/activity_camera.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/res/layout/view_camera.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/res/layout/view_camera.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/android/app/src/main/java/com/shareclarity/textdetectwidgetexample/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/app/src/main/java/com/shareclarity/textdetectwidgetexample/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/CameraViewController.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/UIUtilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/UIUtilities.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/textdetect_widget.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/textdetect_widget.podspec" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/textdetect_widget.iml" beforeDir="false" afterPath="$PROJECT_DIR$/textdetect_widget.iml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.dart_tool/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
@@ -75,11 +72,20 @@
       <file leaf-file-name="main.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2200">
-              <caret line="344" column="14" selection-start-line="344" selection-start-column="14" selection-end-line="344" selection-end-column="14" />
+            <state relative-caret-position="118">
+              <caret line="335" column="30" selection-start-line="335" selection-start-column="30" selection-end-line="335" selection-end-column="30" />
               <folding>
                 <element signature="e#0#40#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/example/pubspec.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="945">
+              <caret line="63" selection-start-line="63" selection-end-line="63" />
             </state>
           </provider>
         </entry>
@@ -105,17 +111,8 @@
       <file leaf-file-name="CameraViewController.m" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3615">
-              <caret line="241" column="25" selection-start-line="241" selection-start-column="25" selection-end-line="241" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="blink.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/android/src/main/res/anim/blink.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="45">
-              <caret line="3" column="53" selection-start-line="3" selection-start-column="53" selection-end-line="3" selection-end-column="53" />
+            <state relative-caret-position="117">
+              <caret line="255" column="18" selection-start-line="255" selection-start-column="18" selection-end-line="255" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -159,6 +156,7 @@
       <find>TPM.AX</find>
       <find>factory</find>
       <find>textdetectController</find>
+      <find>tickerstring</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -233,28 +231,6 @@
               <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
               <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
               <item name="asset" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
-              <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
-              <item name="example" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
-              <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
-              <item name="example" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
-              <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
-              <item name="ios" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
-              <item name="textdetect_widget" type="462c0819:PsiDirectoryNode" />
-              <item name="ios" type="462c0819:PsiDirectoryNode" />
-              <item name="Classes" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="textdetect_widget" type="b2602c69:ProjectViewProjectNode" />
@@ -373,9 +349,9 @@
       <window_info id="Designer" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Device File Explorer" order="3" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.37147596" />
+      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.3289256" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.4975" visible="true" weight="0.24132231" />
+      <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.4975" weight="0.24132231" />
       <window_info anchor="right" id="Palette&#9;" order="3" />
       <window_info id="Image Layers" order="2" />
       <window_info anchor="right" id="Capture Analysis" order="3" />
@@ -409,7 +385,7 @@
           <properties />
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="10" />
+      <option name="time" value="11" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -613,13 +589,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/example/pubspec.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="945">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="56">
@@ -669,13 +638,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3615">
-          <caret line="241" column="25" selection-start-line="241" selection-start-column="25" selection-end-line="241" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/android/src/main/res/anim/blink.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
@@ -721,20 +683,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/android/src/main/res/anim/blink_resume.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ios/Classes/CameraViewController.m">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="117">
+          <caret line="255" column="18" selection-start-line="255" selection-start-column="18" selection-end-line="255" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2200">
-          <caret line="344" column="14" selection-start-line="344" selection-start-column="14" selection-end-line="344" selection-end-column="14" />
+        <state relative-caret-position="118">
+          <caret line="335" column="30" selection-start-line="335" selection-start-column="30" selection-end-line="335" selection-end-column="30" />
           <folding>
             <element signature="e#0#40#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/android/src/main/res/anim/blink_resume.xml">
+    <entry file="file://$PROJECT_DIR$/example/pubspec.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+        <state relative-caret-position="945">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
         </state>
       </provider>
     </entry>
